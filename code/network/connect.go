@@ -1,68 +1,145 @@
 package network
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
-	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/terminal"
-	"log"
-	"os"
+	"github.com/juju/errors"
+	"io"
+	"os/exec"
+	"strings"
+	"sync"
 )
 
-func LoginByPassword(host string, port int, username string, password string) {
-	config := &ssh.ClientConfig{
-		Timeout:         0,
-		User:            username,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Auth:            []ssh.AuthMethod{ssh.Password(password)},
-	}
+const newline = "\r\n"
 
-	addr := fmt.Sprintf("%s:%d", host, port)
-	client, err := ssh.Dial("tcp", addr, config)
+type PowerShell struct {
+	handle *exec.Cmd
+	stdin  io.Writer
+	stdout io.Reader
+	stderr io.Reader
+}
+
+func New() (PowerShell, error) {
+	return NewLocalPowerShell("powershell.exe", "-NoExit", "-Command", "-")
+}
+
+func NewLocalPowerShell(cmd string, args ...string) (PowerShell, error) {
+	command := exec.Command(cmd, args...)
+	stdin, err := command.StdinPipe()
 	if err != nil {
-		log.Fatal("创建ssh失败", err)
+		return PowerShell{}, errors.Annotate(err, "Could not get hold of the PowerShell's stdin stream")
 	}
-	defer client.Close()
 
-	session, err := client.NewSession()
+	stdout, err := command.StdoutPipe()
 	if err != nil {
-		log.Fatal("是啊比", err)
-	}
-	defer session.Close()
-
-	modes := ssh.TerminalModes{
-		ssh.ECHO:          1,     //打开回显
-		ssh.TTY_OP_ISPEED: 14400, //输入速率
-		ssh.TTY_OP_OSPEED: 14400, //输出速率
-		ssh.VSTATUS:       1,
+		return PowerShell{}, errors.Annotate(err, "Could not get hold of the PowerShell's stdout stream")
 	}
 
-	//使用VT100终端来实现tab键提示，上下键查看历史命令，clear键清屏等操作
-	//VT100 start
-	//windows下不支持VT100
-	fd := int(os.Stdin.Fd())
-	oldState, err := terminal.MakeRaw(fd)
+	stderr, err := command.StderrPipe()
 	if err != nil {
-		log.Fatalln(err.Error())
+		return PowerShell{}, errors.Annotate(err, "Could not get hold of the PowerShell's stderr stream")
 	}
-	defer terminal.Restore(fd, oldState)
 
-	termWidth, termHeight, err := terminal.GetSize(fd)
+	err = command.Start()
+	if err != nil {
+		return PowerShell{}, errors.Annotate(err, "Could not spawn PowerShell process")
+	}
 
-	session.Stdin = os.Stdin
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
+	return PowerShell{command, stdin, stdout, stderr}, nil
+}
 
-	//此时打开终端
-	err = session.RequestPty("xterm", termHeight, termWidth, modes)
-	if err != nil {
-		log.Fatalln(err.Error())
+func (s *PowerShell) Exec(cmd string) (string, error) {
+	if s.handle == nil {
+		return "", errors.Annotate(errors.New(cmd), "Cannot execute commands on closed shells.")
 	}
-	err = session.Shell()
+
+	outBoundary := createBoundary()
+	errBoundary := createBoundary()
+
+	// wrap the command in special markers so we know when to stop reading from the pipes
+	full := fmt.Sprintf("%s; echo '%s'; [Console]::Error.WriteLine('%s')%s", cmd, outBoundary, errBoundary, newline)
+
+	_, err := s.stdin.Write([]byte(full))
 	if err != nil {
-		log.Fatalln(err.Error())
+		return "", errors.Annotate(errors.Annotate(err, cmd), "Could not send PowerShell command")
 	}
-	err = session.Wait()
+
+	// read stdout and stderr
+	sout := ""
+	serr := ""
+
+	waiter := &sync.WaitGroup{}
+	waiter.Add(2)
+
+	go streamReader(s.stdout, outBoundary, &sout, waiter)
+	go streamReader(s.stderr, errBoundary, &serr, waiter)
+
+	waiter.Wait()
+
+	if len(serr) > 0 {
+		return serr, errors.Annotate(errors.New(cmd), serr)
+	}
+
+	return sout, nil
+}
+
+func (s *PowerShell) Exit() {
+	s.stdin.Write([]byte("exit" + newline))
+
+	// if it's possible to close stdin, do so (some backends, like the local one,
+	// do support it)
+	closer, ok := s.stdin.(io.Closer)
+	if ok {
+		closer.Close()
+	}
+
+	s.handle.Wait()
+
+	s.handle = nil
+	s.stdin = nil
+	s.stdout = nil
+	s.stderr = nil
+}
+
+func streamReader(stream io.Reader, boundary string, buffer *string, signal *sync.WaitGroup) error {
+	// read all output until we have found our boundary token
+	output := ""
+	bufsize := 64
+	marker := boundary + newline
+
+	for {
+		buf := make([]byte, bufsize)
+		read, err := stream.Read(buf)
+		if err != nil {
+			return err
+		}
+
+		output = output + string(buf[:read])
+
+		if strings.HasSuffix(output, marker) {
+			break
+		}
+	}
+
+	*buffer = strings.TrimSuffix(output, marker)
+	signal.Done()
+
+	return nil
+}
+
+func createBoundary() string {
+	return "$gorilla" + CreateRandomString(12) + "$"
+}
+
+func CreateRandomString(bytes int) string {
+	c := bytes
+	b := make([]byte, c)
+
+	_, err := rand.Read(b)
 	if err != nil {
-		log.Fatalln(err.Error())
+		panic(err)
 	}
+
+	return hex.EncodeToString(b)
 }

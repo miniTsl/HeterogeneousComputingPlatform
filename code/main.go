@@ -1,8 +1,6 @@
 package main
 
-import (
-	"HCPlatform/code/cmd"
-)
+import "HCPlatform/code/cmd"
 
 func main() {
 	err := cmd.Execute()

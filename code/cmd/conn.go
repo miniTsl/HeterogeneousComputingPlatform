@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	LocalConnect  = 0
-	RemoteConnect = 1
+	LocalConnection  int = 0
+	RemoteConnection int = 1
 )
 
 var (

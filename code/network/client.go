@@ -31,6 +31,7 @@ func NewConn(ip string, port int) *Client {
 func (c *Client) loop() {
 	input := bufio.NewReader(os.Stdin)
 	for {
+		fmt.Printf("$:")
 		s, _ := input.ReadString('\n')
 		s = strings.TrimSpace(s)
 		if strings.ToUpper(s) == "Q" {
@@ -49,6 +50,6 @@ func (c *Client) loop() {
 			fmt.Printf("read failed:%v\n", err)
 			return
 		}
-		fmt.Printf("收到服务端回复:%v\n", string(buf[:n]))
+		fmt.Printf("%v\n", string(buf[:n]))
 	}
 }

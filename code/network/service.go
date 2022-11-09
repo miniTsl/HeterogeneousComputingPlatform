@@ -57,7 +57,7 @@ func (h *Handler) loop() {
 			break
 		}
 		reader := bufio.NewReader(h.remoteConn)
-		var buf [128]byte
+		var buf [1024]byte
 		n, err := reader.Read(buf[:])
 		if err != nil {
 			fmt.Printf("read from conn failed, err:%v\n", err)

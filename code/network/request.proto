@@ -1,0 +1,43 @@
+syntax = "proto3";
+package network;
+
+
+
+message connect_addr {
+    string addr = 1;
+    uint32 port = 2;
+}
+
+
+
+
+message Request{
+    string src_addr = 1;
+    string dst_addr = 2;
+
+
+    message Body{
+        enum type{
+            config  = 0;
+            exec = 1;
+        }    
+    }
+    
+}
+
+
+
+message Response{
+    string src_addr = 1;
+    string dst_addr = 2;
+
+
+    message Body{
+        enum type{
+            config  = 0;
+            exec = 1;
+        }    
+        bytes data = 1;
+    }
+    
+}

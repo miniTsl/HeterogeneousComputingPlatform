@@ -23,6 +23,7 @@ var (
 			if asControlServer {
 				network.RunService("127.0.0.1", 9527)
 			}
+
 		},
 	}
 )
@@ -36,4 +37,5 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&listAllDevices, "list", "l", false, "list all devices")
 	rootCmd.PersistentFlags().BoolVarP(&asDeviceClient, "cli", "c", false, "run as device client")
 	rootCmd.PersistentFlags().BoolVarP(&asControlServer, "server", "s", false, "run as server")
+
 }

@@ -92,7 +92,18 @@ func (s *Terminal) Execute(cmd string) (string, string, error) {
 }
 
 func (s *Terminal) Exit() {
+	s.stdin.Write([]byte("exit" + s.newline))
+	closer, ok := s.stdin.(io.Closer)
+	if ok {
+		closer.Close()
+	}
 
+	s.handle.Wait()
+
+	s.handle = nil
+	s.stdin = nil
+	s.stdout = nil
+	s.stderr = nil
 }
 
 func streamReader(stream io.Reader, boundary string, buffer *string, signal *sync.WaitGroup, newline string) error {

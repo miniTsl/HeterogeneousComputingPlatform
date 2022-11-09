@@ -4,7 +4,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	LocalConnection  int = 0
+	RemoteConnection int = 1
+)
+
 var (
+	connectType       int
 	connectDeviceName string
 	connectCmd        = &cobra.Command{
 		Use:   "connect",
@@ -18,7 +24,9 @@ var (
 )
 
 func init() {
-	connectCmd.PersistentFlags().StringVar(&connectDeviceName, "device", "", "you have selected device name")
+	connectCmd.PersistentFlags().StringVar(&connectDeviceName, "deviceName", "", "you have selected device name")
 	connectCmd.MarkPersistentFlagRequired("device")
+	connectCmd.PersistentFlags().IntVar(&connectType, "connectType", 0, "Connect remote deivce or local device")
+	connectCmd.MarkPersistentFlagRequired("connectType")
 
 }

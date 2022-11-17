@@ -18,10 +18,10 @@ var (
 		Long:  "HCP is a heterogeneous computing platform, which was developed by AIoT of Tsinghua University's AIR Institute",
 		Run: func(cmd *cobra.Command, args []string) {
 			if asDeviceClient {
-				network.NewConn("127.0.0.1", 9527)
+				network.NewConn("127.0.0.1", 9521)
 			}
 			if asControlServer {
-				network.RunService("127.0.0.1", 9527)
+				network.RunService("127.0.0.1", 9521)
 			}
 
 		},

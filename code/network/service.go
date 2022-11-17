@@ -44,8 +44,11 @@ type Handler struct {
 }
 
 func processConn(conn net.Conn) *Handler {
-	shell, _ := shell.NewPowerShell()
-	handler := Handler{isExited: false, remoteConn: conn, shell: shell}
+	_shell, err := shell.NewZShell()
+	if err != nil {
+		fmt.Printf("fail to init zsh\n")
+	}
+	handler := Handler{isExited: false, remoteConn: conn, shell: _shell}
 	// 使用go关键字实现goroutines协程执行函数
 	go handler.loop()
 	return &handler
@@ -63,14 +66,15 @@ func (h *Handler) loop() {
 			fmt.Printf("read from conn failed, err:%v\n", err)
 			break
 		}
-
+		// todo problem
 		recv := string(buf[:n])
-		fmt.Printf("exec: %s\n", recv)
+
 		sout, serr, err := h.shell.Execute(recv)
-		if err != nil {
+		if len(serr) > 0 {
 			_, err = h.remoteConn.Write([]byte(serr))
 			fmt.Printf("err: %s\n", serr)
-		} else {
+		}
+		if len(sout) > 0 {
 			_, err = h.remoteConn.Write([]byte(sout))
 			fmt.Printf("out: %s\n", sout)
 		}
@@ -79,6 +83,7 @@ func (h *Handler) loop() {
 			fmt.Printf("write from conn failed, err:%v\n", err)
 			break
 		}
+
 	}
 	h.shell.Exit()
 }

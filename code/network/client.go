@@ -44,7 +44,7 @@ func (c *Client) loop() {
 			return
 		}
 		// 从服务端接收回复消息
-		var buf [1024]byte
+		var buf [4096]byte
 		n, err := c.conn.Read(buf[:])
 		if err != nil {
 			fmt.Printf("read failed:%v\n", err)

@@ -37,19 +37,16 @@ func (c *Client) loop() {
 		if strings.ToUpper(s) == "Q" {
 			return
 		}
-
-		_, err := c.conn.Write([]byte(s))
-		if err != nil {
-			fmt.Printf("send failed, err:%v\n", err)
-			return
-		}
+		SendRequest(c.conn, s)
+		response := RecvResponse(c.conn)
+		fmt.Printf("%s\n", response.GetMsg())
 		// 从服务端接收回复消息
-		var buf [4096]byte
-		n, err := c.conn.Read(buf[:])
-		if err != nil {
-			fmt.Printf("read failed:%v\n", err)
-			return
-		}
-		fmt.Printf("%v\n", string(buf[:n]))
+		//var buf [4096]byte
+		//n, err := c.conn.Read(buf[:])
+		//if err != nil {
+		//	fmt.Printf("read failed:%v\n", err)
+		//	return
+		//}
+		//fmt.Printf("%v\n", string(buf[:n]))
 	}
 }

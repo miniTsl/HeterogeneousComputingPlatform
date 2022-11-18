@@ -71,6 +71,16 @@ func NewZShell() (*Terminal, error) {
 	return &t, nil
 }
 
+func NewBourneAgainShell() (*Terminal, error) {
+	handle, stdin, stdout, stderr, err := NewShell("/bin/bash", "-i", "-s")
+	if err != nil {
+		return nil, err
+	}
+	t := Terminal{shellName: "zsh", newline: "\n", handle: handle, stdin: stdin, stdout: stdout, stderr: stderr, fullFmt: "%s; echo '%s'; echo '%s'>&2%s"}
+
+	return &t, nil
+}
+
 func (s *Terminal) Execute(cmd string) (string, string, error) {
 	if s.handle == nil {
 		return "", "", errors.Annotate(errors.New(cmd), "Cannot execute commands on closed shells.")

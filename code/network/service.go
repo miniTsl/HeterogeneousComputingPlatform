@@ -2,7 +2,6 @@ package network
 
 import (
 	"HCPlatform/code/shell"
-	"bufio"
 	"container/list"
 	"fmt"
 	"log"
@@ -44,7 +43,7 @@ type Handler struct {
 }
 
 func processConn(conn net.Conn) *Handler {
-	_shell, err := shell.NewZShell()
+	_shell, err := shell.NewPowerShell()
 	if err != nil {
 		fmt.Printf("fail to init zsh\n")
 	}
@@ -59,31 +58,23 @@ func (h *Handler) loop() {
 		if h.isExited {
 			break
 		}
-		reader := bufio.NewReader(h.remoteConn)
-		var buf [1024]byte
-		n, err := reader.Read(buf[:])
-		if err != nil {
-			fmt.Printf("read from conn failed, err:%v\n", err)
+
+		request := RecvRequest(h.remoteConn)
+		switch request.Pyload.(type) {
+		case *(Request_CommandRequest):
+			cmd := request.GetCommandRequest().GetCommand()
+			fmt.Printf("%s\n", cmd)
+			//执行命令
+			sout, serr, err := h.shell.Execute(cmd)
+			if err == nil {
+				SendResponse(h.remoteConn, Response_success, sout)
+			} else {
+				SendResponse(h.remoteConn, Response_error, serr)
+			}
+			break
+		case *(Request_FileRequest):
 			break
 		}
-		// todo problem
-		recv := string(buf[:n])
-
-		sout, serr, err := h.shell.Execute(recv)
-		if len(serr) > 0 {
-			_, err = h.remoteConn.Write([]byte(serr))
-			fmt.Printf("err: %s\n", serr)
-		}
-		if len(sout) > 0 {
-			_, err = h.remoteConn.Write([]byte(sout))
-			fmt.Printf("out: %s\n", sout)
-		}
-
-		if err != nil {
-			fmt.Printf("write from conn failed, err:%v\n", err)
-			break
-		}
-
 	}
 	h.shell.Exit()
 }

@@ -20,11 +20,11 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			if asDeviceClient {
 				log.Info("Starting ...,As Device Client")
-				network.NewConn("127.0.0.1", 9521)
+				network.NewConn("192.168.13.233", 9521)
 			}
 			if asControlServer {
 				log.Info("Starting ...,As Control Server")
-				network.RunService("127.0.0.1", 9521)
+				network.RunService("192.168.12.157", 9521)
 			}
 
 		},

@@ -1,7 +1,7 @@
 package network
 
 import (
-	"HCPlatform/code/shell"
+	"HCPlatform/code/pkg"
 	"container/list"
 	"fmt"
 	"net"
@@ -41,29 +41,30 @@ type Handler struct {
 	id         string
 	isExited   bool
 	remoteConn net.Conn
-	shell      *shell.Terminal
+	shell      *pkg.Terminal
 }
 
 func processConn(conn net.Conn) *Handler {
 	//_shell, err := shell.NewPowerShell()
-	var _shell *shell.Terminal
+	var _shell *pkg.Terminal
 	var err error
 	sysType := runtime.GOOS
 	if sysType == "linux" {
 		// LINUX系统
-		_shell, err = shell.NewBourneAgainShell()
+		_shell, err = pkg.NewBourneAgainShell()
 		if err != nil {
 			fmt.Printf("fail to create bash\n")
 			return nil
 		}
+
 	} else if sysType == "windows" {
-		_shell, err = shell.NewPowerShell()
+		_shell, err = pkg.NewPowerShell()
 		if err != nil {
 			fmt.Printf("fail to create powershell\n")
 			return nil
 		}
 	} else if sysType == "darwin" {
-		_shell, err = shell.NewZShell()
+		_shell, err = pkg.NewZShell()
 		if err != nil {
 			fmt.Printf("fail to create zsh\n")
 			return nil

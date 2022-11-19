@@ -62,6 +62,14 @@ func processConn(conn net.Conn) *Handler {
 			fmt.Printf("fail to create powershell\n")
 			return nil
 		}
+	} else if sysType == "darwin" {
+		_shell, err = shell.NewZShell()
+		if err != nil {
+			fmt.Printf("fail to create zsh\n")
+			return nil
+		}
+	} else {
+		return nil
 	}
 	handler := Handler{isExited: false, remoteConn: conn, shell: _shell}
 	// 使用go关键字实现goroutines协程执行函数

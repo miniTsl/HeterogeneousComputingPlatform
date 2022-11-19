@@ -11,3 +11,4 @@
 
 ### 
 1. [cobra使用教程](https://xcbeyond.cn/blog/golang/cobra-quick-start/)
+2. [logrus第三方日志库](https://github.com/sirupsen/logrus)

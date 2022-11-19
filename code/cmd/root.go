@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HCPlatform/code/network"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -18,9 +19,11 @@ var (
 		Long:  "HCP is a heterogeneous computing platform, which was developed by AIoT of Tsinghua University's AIR Institute",
 		Run: func(cmd *cobra.Command, args []string) {
 			if asDeviceClient {
+				log.Info("Starting ...,As Device Client")
 				network.NewConn("127.0.0.1", 9521)
 			}
 			if asControlServer {
+				log.Info("Starting ...,As Control Server")
 				network.RunService("127.0.0.1", 9521)
 			}
 

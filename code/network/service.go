@@ -4,8 +4,10 @@ import (
 	"HCPlatform/code/shell"
 	"container/list"
 	"fmt"
-	"log"
 	"net"
+
+	"log"
+	"runtime"
 )
 
 type Service struct {
@@ -43,9 +45,23 @@ type Handler struct {
 }
 
 func processConn(conn net.Conn) *Handler {
-	_shell, err := shell.NewPowerShell()
-	if err != nil {
-		fmt.Printf("fail to init zsh\n")
+	//_shell, err := shell.NewPowerShell()
+	var _shell *shell.Terminal
+	var err error
+	sysType := runtime.GOOS
+	if sysType == "linux" {
+		// LINUX系统
+		_shell, err = shell.NewBourneAgainShell()
+		if err != nil {
+			fmt.Printf("fail to create bash\n")
+			return nil
+		}
+	} else if sysType == "windows" {
+		_shell, err = shell.NewPowerShell()
+		if err != nil {
+			fmt.Printf("fail to create powershell\n")
+			return nil
+		}
 	}
 	handler := Handler{isExited: false, remoteConn: conn, shell: _shell}
 	// 使用go关键字实现goroutines协程执行函数
@@ -63,7 +79,7 @@ func (h *Handler) loop() {
 		switch request.Pyload.(type) {
 		case *(Request_CommandRequest):
 			cmd := request.GetCommandRequest().GetCommand()
-			fmt.Printf("%s\n", cmd)
+			//fmt.Printf("%s\n", cmd)
 			//执行命令
 			sout, serr, err := h.shell.Execute(cmd)
 			if err == nil {

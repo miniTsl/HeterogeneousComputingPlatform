@@ -11,7 +11,7 @@ import (
 type Client struct {
 	serverIP   string
 	serverPort int
-	conn       net.Conn
+	conn       net.Conn //  tcp连接的句柄
 }
 
 func NewConn(ip string, port int) *Client {
@@ -32,7 +32,7 @@ func (c *Client) loop() {
 	input := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Printf("$:")
-		s, _ := input.ReadString('\n')
+		s, _ := input.ReadString('\n') // \n结尾
 		s = strings.TrimSpace(s)
 		if strings.ToUpper(s) == "Q" {
 			return

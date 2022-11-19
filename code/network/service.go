@@ -45,7 +45,7 @@ type Handler struct {
 }
 
 func processConn(conn net.Conn) *Handler {
-	//_shell, err := shell.NewPowerShell()
+
 	var _shell *shell.Terminal
 	var err error
 	sysType := runtime.GOOS

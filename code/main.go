@@ -15,6 +15,7 @@ func main() {
 
 }
 
+// 初始化log格式
 func init() {
 	// Output to stdout instead of the default stderr
 	log.SetOutput(os.Stdout)
@@ -24,6 +25,6 @@ func init() {
 		DisableColors: true,
 		FullTimestamp: true,
 	})
-	//If you wish to add the calling method as a field, instruct the logger via:
+	// 打印详细信息，返回方法文件位置和行数
 	log.SetReportCaller(true)
 }

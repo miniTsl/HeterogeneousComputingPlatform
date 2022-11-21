@@ -27,6 +27,7 @@ var (
 )
 
 func init() {
+	// device name？？？？
 	uploadCmd.PersistentFlags().StringVar(&transmitDeviceName, "device", "", "")
 	uploadCmd.PersistentFlags().StringVar(&transmitLocalFilePath, "local", "", "")
 	uploadCmd.PersistentFlags().StringVar(&transmitRemoteFilePath, "remote", "", "")

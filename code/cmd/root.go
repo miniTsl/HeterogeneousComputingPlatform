@@ -25,11 +25,11 @@ var (
 			if asDeviceClient {
 				log.Info("Starting ...,As Device Client")
 				// Info logs a message at level Info on the standard logger.
-				network.NewConn("192.168.12.157", 9521)	// 数据发往地址
+				network.NewConn("183.172.197.36", 9521) // 数据发往地址
 			}
 			if asControlServer {
 				log.Info("Starting ...,As Control Server")
-				network.RunService("192.168.13.233", 9521)	// 监听来自地址的数据
+				network.RunService("183.172.197.36", 9521) // 监听来自地址的数据
 			}
 
 		},

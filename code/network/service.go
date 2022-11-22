@@ -138,13 +138,13 @@ func (h *Handler) loop() {
 		// 从连接Conn中获取请求
 		request := RecvRequest(h.remoteConn)
 		switch request.Pyload.(type) {
-		case *(Request_CommandRequest):	// 命令类型请求
+		case *(Request_CommandRequest): // 命令类型请求
 			// proto类型->string
 			cmd := request.GetCommandRequest().GetCommand()
 
 			// 执行命令
 			sout, serr, err := h.shell.Execute(cmd)
-			
+
 			// 将执行结果返回client
 			// string->proto格式->[]byte
 			if err == nil {
@@ -152,11 +152,11 @@ func (h *Handler) loop() {
 			} else {
 				full_out := fmt.Sprintf("%s\nerr:%s\n", sout, serr)
 				SendResponse(h.remoteConn, Response_error, full_out)
-
-				// SendResponse(h.remoteConn, Response_error, serr
+				//
+				//SendResponse(h.remoteConn, Response_error, serr)
 			}
 			break
-		case *(Request_FileRequest):	// TODO 文件类型请求
+		case *(Request_FileRequest): // TODO 文件类型请求
 			break
 		}
 	}

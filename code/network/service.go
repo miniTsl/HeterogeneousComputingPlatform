@@ -150,7 +150,10 @@ func (h *Handler) loop() {
 			if err == nil {
 				SendResponse(h.remoteConn, Response_success, sout)
 			} else {
-				SendResponse(h.remoteConn, Response_error, serr)
+				full_out := fmt.Sprintf("%s\nerr:%s\n", sout, serr)
+				SendResponse(h.remoteConn, Response_error, full_out)
+
+				// SendResponse(h.remoteConn, Response_error, serr
 			}
 			break
 		case *(Request_FileRequest):	// TODO 文件类型请求

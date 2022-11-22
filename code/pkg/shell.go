@@ -66,7 +66,7 @@ func NewPowerShell() (*Terminal, error) {
 }
 
 func NewZShell() (*Terminal, error) {
-	// todo zsh是什么指令不退出进程
+
 	handle, stdin, stdout, stderr, err := NewShell("/bin/zsh", "-i", "-s")
 	if err != nil {
 		return nil, err

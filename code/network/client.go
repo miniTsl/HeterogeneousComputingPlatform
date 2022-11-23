@@ -22,7 +22,7 @@ type Client struct {
 func NewConn(ip string, port int) *Client {
 	// 创建客户端对象
 	client := &Client{serverIP: ip, serverPort: port}
-	// 建立指向特定地址的网络连接
+	// 建立指向特定地址"……"的网络连接
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
 		fmt.Printf("conn server failed, err:%v\n", err)
@@ -34,15 +34,16 @@ func NewConn(ip string, port int) *Client {
 	return client
 }
 
-// 自动成为成员函数？？？？
+// 自动成为成员函数
 func (c *Client) loop() {
 	input := bufio.NewReader(os.Stdin) // NewReader returns a new Reader whose buffer has the default size.
+	// 循环读取用户输入
 	for {
 		fmt.Printf("$:")
 		s, _ := input.ReadString('\n') // 命令以\n结尾
-		s = strings.TrimSpace(s)
+		s = strings.TrimSpace(s)       // 去掉空格
 		// TrimSpace returns a slice of the string s, with all leading and trailing white space removed
-		// q/Q退出
+		// 按q/Q结束输入，断开client和server的连接
 		if strings.ToUpper(s) == "Q" {
 			return
 		}
@@ -52,6 +53,6 @@ func (c *Client) loop() {
 		// 接收返回的数据
 		// []byte->proto格式
 		response := RecvResponse(c.conn)
-		fmt.Printf("%s\n", response.GetMsg())
+		fmt.Printf("%s\n", response.GetMsg()) // GetMsg是protobuf提供的方法
 	}
 }

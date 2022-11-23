@@ -55,6 +55,10 @@ func NewShell(cmd string, args ...string) (*exec.Cmd, io.Writer, io.Reader, io.R
 	return command, stdin, stdout, stderr, nil
 }
 
+
+// 相当于有两层，第一层是开启shell并获取这一步骤的程序句柄、标准输入、输出、错误
+// 第二层是将获取到的上述内容封装到terminal类型中，继续执行从client中读取的指令
+
 func NewPowerShell() (*Terminal, error) {
 	handle, stdin, stdout, stderr, err := NewShell("powershell.exe", "-NoExit", "-Command", "-")
 	if err != nil {
@@ -87,6 +91,7 @@ func NewBourneAgainShell() (*Terminal, error) {
 }
 
 func (s *Terminal) Execute(cmd string) (string, string, error) {
+	// 检查shell句柄是否开启成功
 	if s.handle == nil {
 		return "", "", errors.Annotate(errors.New(cmd), "Cannot execute commands on closed shells.")
 	}
@@ -113,8 +118,9 @@ func (s *Terminal) Execute(cmd string) (string, string, error) {
 
 	waiter := &sync.WaitGroup{}
 	// A WaitGroup waits for a collection of goroutines to finish. The main goroutine calls Add to set the number of goroutines to wait for. Then each of the goroutines runs and calls Done when finished. At the same time, Wait can be used to block until all goroutines have finished.
-	waiter.Add(2)	// 因为我们要读取标准输出和标准错误
+	waiter.Add(2)	// 因为我们要读取标准输出和标准错误，共计2
 
+	// 从开启的shell的标准输出和标准错误中读内容到字符串sout和serr中
 	go streamReader(s.stdout, outBoundary, &sout, waiter, s.newline)
 	go streamReader(s.stderr, errBoundary, &serr, waiter, s.newline)
 
@@ -127,6 +133,7 @@ func (s *Terminal) Execute(cmd string) (string, string, error) {
 }
 
 func (s *Terminal) Exit() {
+	// 向开启的终端中写入exit\n
 	s.stdin.Write([]byte("exit" + s.newline))
 	closer, ok := s.stdin.(io.Closer)
 	if ok {

@@ -13,7 +13,8 @@ type Service struct {
 	ip       string
 	port     int
 	listener *net.Listener // A Listener is a generic network listener for stream-oriented protocols.
-	handlers *list.List    // 链表中存放多个shell子进程(用Handler结构体表征)
+	// 服务器监听者
+	handlers *list.List // 链表中存放多个shell子进程(用Handler结构体表征)，服务器对连接的管理者
 	// List represents a doubly linked list双向链表. The zero value for List is an empty list ready to use.
 }
 
@@ -24,7 +25,7 @@ func RunService(ip string, port int) *Service {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// 在 defer 归属的函数即将返回时，将延迟处理的语句按 defer 的逆序进行执行，即close在RunService返回时执行
+	// 在 defer 归属的函数即将返回时，将延迟处理的语句按 defer 的逆序进行执行，即close在RunService()返回前最后执行
 	defer l.Close()
 	service.listener = &l
 	for {
@@ -33,15 +34,16 @@ func RunService(ip string, port int) *Service {
 		if err != nil {
 			log.Fatal(err)
 		}
-		// 加入新建立的连接
+		// 加入新建立的连接，列表成员格式是*Handler，会在服务器端打开一个shell
 		service.handlers.PushBack(processConn(conn))
 	}
 	return &service
 }
 
+// 每个连接到服务器的用户都会对应一个handler对象
 type Handler struct {
-	id         string
-	isExited   bool
+	id         string // TODO 实现id管理
+	isExited   bool   // TODO 检查server中维护的handler是否到期
 	remoteConn net.Conn
 	shell      *pkg.Terminal
 }
@@ -131,7 +133,7 @@ func processConn(conn net.Conn) *Handler {
 
 func (h *Handler) loop() {
 	for {
-		// 直到连接中断才退出
+		// 连接中断则关闭client和server的连接，应该移除相应的handler？
 		if h.isExited {
 			break
 		}
@@ -144,6 +146,15 @@ func (h *Handler) loop() {
 
 			// 执行命令
 			sout, serr, err := h.shell.Execute(cmd)
+			// sout
+			/*
+				]2;tesla@sunyideMacBook-Air:~/Documents/AIoT_AIR/HCP/HeterogeneousComputingPlatform]1;..utingPlatform]2;ls -G; echo '$gorillad2627889131e673d94fa25c0$'; echo  >&2]1;ls;README.md
+				code
+				doc
+				go.mod
+				go.sum
+			*/
+			// err: [0m[49m[39m[0m[49m[39m[0m[49m[39m[0m[49m [0m[49m[38;5;31m [1m[38;5;31m[38;5;39m~[0m[38;5;39m[49m[38;5;31m/Documents/AIoT_AIR/HCP/[1m[38;5;31m[38;5;39mHeterogeneousComputingPlatform[0m[38;5;39m[49m[38;5;31m[0m[38;5;31m[49m[38;5;31m[0m[38;5;31m[49m [0m[38;5;31m[49m[38;5;178m[0m[38;5;178m[49m[38;5;76m[0m[38;5;76m[49m[38;5;178m [38;5;76m comment [38;5;76m⇡3 [38;5;178m!6[0m[38;5;178m[49m[38;5;178m[0m[38;5;178m[49m [0m[38;5;178m[49m[38;5;76m❯[0m[38;5;76m[49m[38;5;76m[0m[38;5;76m[49m[30m[0m[30m[49m[39m [0m[49m[39m
 
 			// 将执行结果返回client
 			// string->proto格式->[]byte
@@ -160,5 +171,6 @@ func (h *Handler) loop() {
 			break
 		}
 	}
+	//
 	h.shell.Exit()
 }

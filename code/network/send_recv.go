@@ -8,7 +8,7 @@ import (
 )
 // client端发送请求
 func SendRequest(conn net.Conn, cmd string) (string, string, error) {
-	// 将要发送的数据包装为proto要求的request类型结构体
+	// 将要发送的数据包装为protobuf要求的request类型结构体
 	msg := Request{
 		From:  &ConnAddress{},
 		To:    &ConnAddress{},

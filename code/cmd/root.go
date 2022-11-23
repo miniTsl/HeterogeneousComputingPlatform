@@ -2,12 +2,11 @@ package cmd // 指定模块名
 
 import (
 	"HCPlatform/code/network"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-// 定义全局变量
+// 定义全局变量，尤其是rootCmd
 var (
 	asDeviceClient  bool
 	asControlServer bool
@@ -25,7 +24,7 @@ var (
 			if asDeviceClient {
 				log.Info("Starting ...,As Device Client")
 				// Info logs a message at level Info on the standard logger.
-				network.NewConn("183.172.197.36", 9521) // 数据发往地址
+				network.NewConn("183.172.197.36", 9521) // 数据发往的地址
 			}
 			if asControlServer {
 				log.Info("Starting ...,As Control Server")
@@ -37,7 +36,7 @@ var (
 )
 
 func Execute() error {
-	return rootCmd.Execute()
+	return rootCmd.Execute()	// cobra提供的方法
 }
 
 func init() {

@@ -1,0 +1,11 @@
+jumpServer:
+  ip: 172.16.101.124
+  port: 9520
+
+device:
+  ip: 172.16.101.124
+  port: 9521
+  deviceName: ROG-LAPTOP
+  deviceId: 20221120
+  level:  1
+  type: 2

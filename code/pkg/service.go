@@ -1,7 +1,7 @@
-package network
+package pkg
 
 import (
-	"HCPlatform/code/pkg"
+	"HCPlatform/code/internal"
 	"container/list"
 	"fmt"
 	"net"
@@ -17,7 +17,15 @@ type Service struct {
 	handlers *list.List
 }
 
-func RunService(ip string, port int) *Service {
+func NewNetListener(ip string, port int) net.Listener {
+	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", ip, port))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return l
+}
+
+func NewService(ip string, port int) *Service {
 	service := Service{ip: ip, port: port, handlers: list.New()}
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", service.ip, service.port))
 
@@ -26,45 +34,54 @@ func RunService(ip string, port int) *Service {
 	}
 	defer l.Close()
 	service.listener = &l
+	return &service
+}
+
+func RunService(service *Service) {
+
 	for {
 		// Wait for a connection.
-		conn, err := l.Accept()
+		conn, err := (*service.listener).Accept()
 		if err != nil {
 			log.Fatal(err)
 		}
 		service.handlers.PushBack(processConn(conn))
 	}
-	return &service
+
+}
+
+func StopService(service *Service) {
+
 }
 
 type Handler struct {
 	id         string
 	isExited   bool
 	remoteConn net.Conn
-	shell      *pkg.Terminal
+	shell      *internal.Terminal
 }
 
 func processConn(conn net.Conn) *Handler {
 	//_shell, err := shell.NewPowerShell()
-	var _shell *pkg.Terminal
+	var _shell *internal.Terminal
 	var err error
 	sysType := runtime.GOOS
 	if sysType == "linux" {
 		// LINUX系统
-		_shell, err = pkg.NewBourneAgainShell()
+		_shell, err = internal.NewBourneAgainShell()
 		if err != nil {
 			fmt.Printf("fail to create bash\n")
 			return nil
 		}
 
 	} else if sysType == "windows" {
-		_shell, err = pkg.NewPowerShell()
+		_shell, err = internal.NewPowerShell()
 		if err != nil {
 			fmt.Printf("fail to create powershell\n")
 			return nil
 		}
 	} else if sysType == "darwin" {
-		_shell, err = pkg.NewZShell()
+		_shell, err = internal.NewZShell()
 		if err != nil {
 			fmt.Printf("fail to create zsh\n")
 			return nil
@@ -86,10 +103,8 @@ func (h *Handler) loop() {
 
 		request := RecvRequest(h.remoteConn)
 		switch request.Pyload.(type) {
-		case *(Request_CommandRequest):
-			cmd := request.GetCommandRequest().GetCommand()
-			//fmt.Printf("%s\n", cmd)
-			//执行命令
+		case *(Request_ShellRequest):
+			cmd := request.GetShellRequest().GetCommand()
 			sout, serr, err := h.shell.Execute(cmd)
 			if err == nil {
 				SendResponse(h.remoteConn, Response_success, sout)

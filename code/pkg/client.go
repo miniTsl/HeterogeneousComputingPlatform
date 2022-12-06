@@ -1,4 +1,4 @@
-package network
+package pkg
 
 import (
 	"bufio"
@@ -23,8 +23,6 @@ func NewConn(ip string, port int) *Client {
 		return nil
 	}
 	client.conn = conn
-	//}
-	client.loop()
 	return client
 }
 
@@ -37,7 +35,7 @@ func (c *Client) loop() {
 		if strings.ToUpper(s) == "Q" {
 			return
 		}
-		SendRequest(c.conn, s)
+		SendShellRequest(c.conn, s)
 		response := RecvResponse(c.conn)
 		fmt.Printf("%s\n", response.GetMsg())
 		// 从服务端接收回复消息

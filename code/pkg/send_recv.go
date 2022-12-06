@@ -1,4 +1,4 @@
-package network
+package pkg
 
 import (
 	"bufio"
@@ -7,13 +7,28 @@ import (
 	"net"
 )
 
-func SendRequest(conn net.Conn, cmd string) (string, string, error) {
+func SendRegisterRequest(conn net.Conn, devices []DeviceMessage) error {
+	//msg := Request{
+	//	From:  &ConnAddress{},
+	//	To:    &ConnAddress{},
+	//	XType: Request_register,
+	//	Pyload: &Request_RegisterRequest{
+	//		RegisterRequest: &RegisterRequest{
+	//			Devices: devices
+	//		},
+	//	},
+	//}
+
+	return nil
+}
+
+func SendShellRequest(conn net.Conn, cmd string) (string, string, error) {
 	msg := Request{
 		From:  &ConnAddress{},
 		To:    &ConnAddress{},
-		XType: Request_command,
-		Pyload: &Request_CommandRequest{
-			CommandRequest: &CommandRequest{
+		XType: Request_shell,
+		Pyload: &Request_ShellRequest{
+			ShellRequest: &ShellRequest{
 				ShellId: 0,
 				Command: cmd,
 			},

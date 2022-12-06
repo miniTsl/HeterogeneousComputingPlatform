@@ -12,13 +12,14 @@ const (
 var (
 	connectType       int
 	connectDeviceName string
-	connectCmd        = &cobra.Command{
+
+	connectCmd = &cobra.Command{
 		Use:   "connect",
 		Short: "Connect a device",
 		Long:  "Conect a device which you have selected",
 		Run: func(cmd *cobra.Command, args []string) {
 			//TODO: 根据设备查询连接方式
-			//network.LoginByPassword("192.168.13.189", 22, "yang", "274085")
+			//pkg.LoginByPassword("192.168.13.189", 22, "yang", "274085")
 		},
 	}
 )

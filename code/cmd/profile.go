@@ -48,7 +48,8 @@ var (
 )
 
 func init() {
-	profileCmd.PersistentFlags().StringVar(&modelPath, "modelPath", "", "file path")
+	//connectCmd.PersistentFlags().BoolVar(&NNMeter, "nn-meter", true, "profile by nn-meter")
+	profileCmd.PersistentFlags().StringVar(&modelPath, "modelPath", "", "devcie configuration")
 	profileCmd.MarkPersistentFlagRequired("modelPath")
 	profileCmd.PersistentFlags().StringVar(&profilerName, "profilerName", "nn-meter", "optional: nn-meter,paddle-lite,tensorflow-lite,onnxruntime")
 	profileCmd.MarkPersistentFlagRequired("profilerName")

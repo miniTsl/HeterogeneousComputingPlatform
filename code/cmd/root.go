@@ -3,6 +3,7 @@ package cmd
 import (
 	"HCPlatform/code/internal"
 	"HCPlatform/code/pkg"
+	"HCPlatform/code/protos/exec"
 	"HCPlatform/code/protos/register"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -59,20 +60,42 @@ var (
 				log.Info(res.Msg)
 			}
 			if asControlServer {
-				l := pkg.NewNetListener(serverIP, serverPort)
-				s := grpc.NewServer()
-				rs := protos.RegisterService{}
-				protos.RegisterReisgterServer(s, &rs)
-				//reflection.Register(s)
-				err := s.Serve(l)
-				if err != nil {
-					log.Error(err.Error())
-					return
-				}
+				//launchRegisterService(serverIP,serverPort)
+				launchProfileService(serverIP, serverPort)
 			}
 		},
 	}
 )
+
+func launchRegisterService(ip string, port int) {
+	l := pkg.NewNetListener(ip, port)
+	s := grpc.NewServer()
+	rs := protos.RegisterService{}
+	protos.RegisterReisgterServer(s, &rs)
+	err := s.Serve(l)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+}
+
+func launchProfileService(ip string, port int) {
+	l := pkg.NewNetListener(ip, port)
+	// 此处设置最佳发送文件大小512M
+	var options = []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(1024 * 1024 * 512),
+		grpc.MaxSendMsgSize(1024 * 1024 * 512),
+	}
+	s := grpc.NewServer(options...)
+	rs := exec.ProfileService{}
+	exec.RegisterProfileServer(s, &rs)
+	err := s.Serve(l)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+}
 
 func Execute() error {
 	return rootCmd.Execute()
@@ -80,6 +103,7 @@ func Execute() error {
 
 func init() {
 	rootCmd.AddCommand(connectCmd)
+	rootCmd.AddCommand(profileCmd)
 	rootCmd.PersistentFlags().BoolVarP(&needListAllDevices, "list", "l", false, "list all devices")
 	rootCmd.PersistentFlags().BoolVarP(&asDeviceClient, "cli", "c", false, "run as device client")
 	rootCmd.PersistentFlags().BoolVarP(&asUserClient, "user", "u", false, "run as user client")

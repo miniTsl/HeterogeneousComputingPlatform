@@ -24,7 +24,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:   "hcp",
-		Short: "HCP was developed by AIoT of Tsinghua University",
+		Short: "HCP was developed by AIoT of AIR",
 		Long:  "HCP is a heterogeneous computing platform, which was developed by AIoT of Tsinghua University's AIR Institute",
 		Run: func(cmd *cobra.Command, args []string) {
 			data, err := os.ReadFile(cfgPath)
@@ -41,7 +41,7 @@ var (
 			}
 			//deviceCfg := cfg.GetDeviceCfg()
 			//serverCfg := cfg.GetServerCfg()
-			serverIP, serverPort := "127.0.0.1", 9520
+			serverIP, serverPort := "0.0.0.0", 9520
 			if asDeviceClient {
 
 				conn, err := grpc.Dial(fmt.Sprintf("%s:%d", serverIP, serverPort), grpc.WithInsecure())

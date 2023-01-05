@@ -14,7 +14,10 @@ var (
 	modelPath    string
 	profilerName string
 	deviceName   string
-	profileCmd   = &cobra.Command{
+
+	nnmeterPredictorName string
+	nnmeterPredictorType string
+	profileCmd           = &cobra.Command{
 		Use:   "profile",
 		Short: "profile a model on specific device",
 		Long:  "profile a model on specific device",
@@ -22,7 +25,7 @@ var (
 			//TODO: 根据设备查询连接方式
 			//向服务器发送一个模型文件
 			//fmt.Print(modelPath, profilerName)
-			serverIP, serverPort := "127.0.0.1", 9520
+			serverIP, serverPort := "192.168.1.106", 9520
 
 			conn, err := grpc.Dial(fmt.Sprintf("%s:%d", serverIP, serverPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
@@ -30,7 +33,9 @@ var (
 			}
 			defer conn.Close()
 			c := exec.NewProfileClient(conn)
-			req := exec.NewProfileRequest(modelPath)
+			fmt.Println("connect to ", serverIP)
+			req := exec.NewProfileRequest(modelPath, nnmeterPredictorName, nnmeterPredictorType)
+			fmt.Println("upload model", modelPath, " to ", serverIP)
 			res, err := c.ProfileByNNMeter(context.Background(), req)
 			if err != nil {
 				log.Fatal(err)
@@ -42,14 +47,12 @@ var (
 	}
 )
 
-/*
-nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --onnx D:\code\YaXin-ModelParallel\o_onnx\mobilenetv2-12.onnx
-*/
-
 func init() {
-	//connectCmd.PersistentFlags().BoolVar(&NNMeter, "nn-meter", true, "profile by nn-meter")
-	profileCmd.PersistentFlags().StringVar(&modelPath, "modelPath", "", "devcie configuration")
+	profileCmd.PersistentFlags().StringVar(&modelPath, "modelPath", "", "file path")
 	profileCmd.MarkPersistentFlagRequired("modelPath")
-	profileCmd.PersistentFlags().StringVar(&profilerName, "profilerName", "", "devcie configuration")
+	profileCmd.PersistentFlags().StringVar(&profilerName, "profilerName", "nn-meter", "optional: nn-meter,paddle-lite,tensorflow-lite,onnxruntime")
 	profileCmd.MarkPersistentFlagRequired("profilerName")
+	profileCmd.PersistentFlags().StringVar(&nnmeterPredictorName, "nn-meter predictor", "cortexA76cpu_tflite21", "optional: cortexA76cpu_tflite21,adreno640gpu_tflite21,adreno630gpu_tflite21,myriadvpu_openvino2019r2")
+	profileCmd.PersistentFlags().StringVar(&nnmeterPredictorType, "nn-meter framework", "onnx", "optional: tensorflow,onnxruntime,torch")
+
 }

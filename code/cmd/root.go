@@ -24,7 +24,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:   "hcp",
-		Short: "HCP was developed by AIoT of Tsinghua University",
+		Short: "HCP was developed by AIoT of AIR",
 		Long:  "HCP is a heterogeneous computing platform, which was developed by AIoT of Tsinghua University's AIR Institute",
 		Run: func(cmd *cobra.Command, args []string) {
 			data, err := os.ReadFile(cfgPath)

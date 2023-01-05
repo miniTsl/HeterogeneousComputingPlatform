@@ -19,17 +19,18 @@ func (s *ProfileService) ProfileByNNMeter(ctx context.Context, request *ProfileR
 	if err != nil {
 		resp.Msg = err.Error()
 	}
-	res := profileByNNMeter(path)
+	args := request.GetNnmeterArgs()
+	res := profileByNNMeter(path, args.Predictor, args.Version, args.Framework)
 	resp.Msg = fmt.Sprintf("Profiler:nn-Meter\tPredictor:cortexA76cpu_tflite21\tpredictor-version 1.0\tonnx\n%s", res)
 	return resp, nil
 }
 
-func profileByNNMeter(path string) string {
+func profileByNNMeter(path string, predictor string, version string, framework string) string {
 	//打开shell查看执行状态...
 	shell, _ := internal.NewPowerShell()
 	//打开nn-meter执行环境
 	sout, serr, err := shell.Execute("conda activate nn-meter")
-	sout, serr, err = shell.Execute(fmt.Sprintf("nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --onnx %s", path))
+	sout, serr, err = shell.Execute(fmt.Sprintf("nn-meter predict --predictor %s --predictor-version %s --%s %s", predictor, version, framework, path))
 	if err != nil {
 		fmt.Println(sout, "\n", serr)
 	} else {
@@ -43,7 +44,7 @@ func (s *ProfileService) mustEmbedUnimplementedProfileServer() {
 	panic("implement me")
 }
 
-func NewProfileRequest(path string) *ProfileRequest {
+func NewProfileRequest(path string, nnmeterPredictorName string, nnmeterPredictorFramework string) *ProfileRequest {
 	file := new(File)
 	data, size := convertFileToBytes(path)
 	file.Data = data
@@ -59,6 +60,11 @@ func NewProfileRequest(path string) *ProfileRequest {
 	}
 	rq := new(ProfileRequest)
 	rq.ModelFile = file
+	rq.Args = &ProfileRequest_NnmeterArgs{NnmeterArgs: &NNMeterArgs{
+		Predictor: nnmeterPredictorName,
+		Version:   "1.0",
+		Framework: nnmeterPredictorFramework,
+	}}
 	return rq
 }
 

@@ -12,6 +12,7 @@
 
 protoc --go_out=./ .\message.proto
 protoc --go_out=./ .\register.proto
+protoc --go_out=./ .\profile.proto
 protoc --go-grpc_out=. .\register.proto
 
 protoc --go-grpc_out=. .\register.proto

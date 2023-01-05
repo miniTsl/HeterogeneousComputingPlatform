@@ -36,7 +36,8 @@ var (
 				log.Fatal(err)
 			}
 
-			log.Info(res.Msg)
+			//log.Info(res.Msg)
+			fmt.Println(res.Msg)
 		},
 	}
 )

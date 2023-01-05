@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"HCPlatform/code/internal"
 	"context"
 	"fmt"
 	"io"
@@ -18,13 +19,23 @@ func (s *ProfileService) ProfileByNNMeter(ctx context.Context, request *ProfileR
 	if err != nil {
 		resp.Msg = err.Error()
 	}
-	profileByNNMeter(path)
+	res := profileByNNMeter(path)
+	resp.Msg = fmt.Sprintf("Profiler:nn-Meter\tPredictor:cortexA76cpu_tflite21\tpredictor-version 1.0\tonnx\n%s", res)
 	return resp, nil
 }
 
 func profileByNNMeter(path string) string {
-
-	return ""
+	//打开shell查看执行状态...
+	shell, _ := internal.NewPowerShell()
+	//打开nn-meter执行环境
+	sout, serr, err := shell.Execute("conda activate nn-meter")
+	sout, serr, err = shell.Execute(fmt.Sprintf("nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --onnx %s", path))
+	if err != nil {
+		fmt.Println(sout, "\n", serr)
+	} else {
+		fmt.Println(sout)
+	}
+	return sout
 }
 
 func (s *ProfileService) mustEmbedUnimplementedProfileServer() {

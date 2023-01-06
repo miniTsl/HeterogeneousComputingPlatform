@@ -11,7 +11,7 @@ func main() {
 	// := 是声明并赋值，并且系统自动推断类型，不需要var关键字
 	// 普通的=赋值运算符需要先用var声明变量名
 	err := cmd.Execute()
-	// nil is a predeclared identifier representing the zero value for a pointer, channel, func, interface, map, or slice type. cmd.Execute()返回的是一个interface。如果有错则直接返回
+	// nil is a predeclared identifier representing the zero value for a pointer, channel, func, interface, map, or slice type. cmd.Execute()返回的是一个interface。如果有错则直接退出
 	// error is the conventional interface for representing an error condition
 	if err != nil {
 		return

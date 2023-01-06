@@ -41,7 +41,7 @@ func Execute() error {
 
 func init() {
 	rootCmd.AddCommand(connectCmd) // AddCommand adds one or more commands to this parent command.
-	// BoolVarP()支持-来简化输入
+	// BoolVarP()支持-来简化--输入
 	rootCmd.PersistentFlags().BoolVarP(&listAllDevices, "list", "l", false, "list all devices")
 	rootCmd.PersistentFlags().BoolVarP(&asDeviceClient, "cli", "c", false, "run as device client")
 	rootCmd.PersistentFlags().BoolVarP(&asControlServer, "server", "s", false, "run as server")

@@ -1,0 +1,44 @@
+syntax = "proto3";
+option go_package="./;protos";
+package protos;
+
+message DeviceMessage {
+  enum Level{
+    JUMP_SERVER = 0;
+    LEVEL_1     = 1;
+    LEVEL_2     = 2;
+  }
+
+  enum Type{
+    ANDROID = 0;
+    IOS     = 1;
+    PC      = 2;
+    USB     = 3;
+    PCIE    = 4;
+  }
+
+  string deviceName = 1;
+  uint64 deviceId   = 2;
+  string deviceAddress = 3;
+  Level   _level = 4;
+  DeviceMessage  deviceParent = 5;
+  Type    _type = 6;
+}
+
+service Reisgter{
+  rpc ResgisterDevice(RegisterRequest) returns (RegisterResponse){}
+}
+
+message RegisterRequest{
+  repeated DeviceMessage devices = 1;
+}
+
+message RegisterResponse{
+  enum state{
+    success = 0;
+    error   = 1;
+  }
+  state stateCode = 1;
+  string  msg = 4;
+  uint64 timestamp = 5;
+}

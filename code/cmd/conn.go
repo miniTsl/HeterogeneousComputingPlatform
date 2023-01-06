@@ -12,7 +12,8 @@ const (
 var (
 	connectType       int
 	connectDeviceName string
-	connectCmd        = &cobra.Command{
+
+	connectCmd = &cobra.Command{
 		Use:   "connect",
 		Short: "Connect a device",
 		Long:  "Conect a device which you have selected",

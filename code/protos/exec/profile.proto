@@ -1,0 +1,42 @@
+syntax = "proto3";
+option go_package="./;exec";
+package protos;
+
+
+service Profile{
+  rpc profileByNNMeter(ProfileRequest) returns (ProfileResponse){}
+}
+
+
+message ProfileRequest{
+  enum Type {
+    nnMeter = 0;
+    paddlelite = 1;
+    tflite = 2;
+    onnxruntime = 3;
+  }
+  File modelFile = 1;
+
+  oneof args {
+    NNMeterArgs nnmeterArgs = 10;
+  }
+}
+
+
+
+
+message ProfileResponse{
+  string msg = 1;
+}
+
+message File {
+  string filename = 1;
+  uint32 size = 2;
+  bytes data = 3;
+}
+
+message NNMeterArgs{
+  string predictor = 1;
+  string version = 2;
+  string framework = 3;
+}

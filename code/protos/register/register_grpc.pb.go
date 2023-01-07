@@ -7,6 +7,7 @@
 package protos
 
 import (
+	"HCPlatform/code/pkg"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -66,7 +67,7 @@ type UnsafeReisgterServer interface {
 	mustEmbedUnimplementedReisgterServer()
 }
 
-func RegisterReisgterServer(s grpc.ServiceRegistrar, srv ReisgterServer) {
+func RegisterReisgterServer(s grpc.ServiceRegistrar, srv *pkg.RegisterService) {
 	s.RegisterService(&Reisgter_ServiceDesc, srv)
 }
 

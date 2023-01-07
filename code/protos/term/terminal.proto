@@ -1,0 +1,27 @@
+syntax = "proto3";
+option go_package="./;term";
+package protos;
+
+
+service Terminal{
+
+  rpc NewTerminal(TerminalRequest) returns (TerminalResponse){}
+  rpc CloseTerminal(TerminalResponse) returns (TerminalResponse){}
+  rpc ExecCommand(TerminalRequest) returns (TerminalResponse){}
+
+}
+
+message TerminalRequest{
+  string dstIP = 1;
+  string srcIP = 2;
+  uint64 shellId = 3;
+  string command = 4;
+}
+
+message TerminalResponse{
+  string dstIP = 1;
+  string srcIP = 2;
+  uint64 shellId = 3;
+  string result = 4;
+}
+

@@ -7,6 +7,7 @@
 package exec
 
 import (
+	"HCPlatform/code/pkg"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -22,7 +23,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProfileClient interface {
-	ProfileByNNMeter(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	ProfileWithArgs(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	// 获取分析能力
+	GetProfileAbility(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
 }
 
 type profileClient struct {
@@ -33,9 +36,18 @@ func NewProfileClient(cc grpc.ClientConnInterface) ProfileClient {
 	return &profileClient{cc}
 }
 
-func (c *profileClient) ProfileByNNMeter(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+func (c *profileClient) ProfileWithArgs(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
 	out := new(ProfileResponse)
-	err := c.cc.Invoke(ctx, "/protos.Profile/profileByNNMeter", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/protos.Profile/profileWithArgs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *profileClient) GetProfileAbility(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, "/protos.Profile/getProfileAbility", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +58,9 @@ func (c *profileClient) ProfileByNNMeter(ctx context.Context, in *ProfileRequest
 // All implementations must embed UnimplementedProfileServer
 // for forward compatibility
 type ProfileServer interface {
-	ProfileByNNMeter(context.Context, *ProfileRequest) (*ProfileResponse, error)
+	ProfileWithArgs(context.Context, *ProfileRequest) (*ProfileResponse, error)
+	// 获取分析能力
+	GetProfileAbility(context.Context, *ProfileRequest) (*ProfileResponse, error)
 	mustEmbedUnimplementedProfileServer()
 }
 
@@ -54,8 +68,11 @@ type ProfileServer interface {
 type UnimplementedProfileServer struct {
 }
 
-func (UnimplementedProfileServer) ProfileByNNMeter(context.Context, *ProfileRequest) (*ProfileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ProfileByNNMeter not implemented")
+func (UnimplementedProfileServer) ProfileWithArgs(context.Context, *ProfileRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProfileWithArgs not implemented")
+}
+func (UnimplementedProfileServer) GetProfileAbility(context.Context, *ProfileRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfileAbility not implemented")
 }
 func (UnimplementedProfileServer) mustEmbedUnimplementedProfileServer() {}
 
@@ -66,24 +83,42 @@ type UnsafeProfileServer interface {
 	mustEmbedUnimplementedProfileServer()
 }
 
-func RegisterProfileServer(s grpc.ServiceRegistrar, srv ProfileServer) {
+func RegisterProfileServer(s grpc.ServiceRegistrar, srv *pkg.ProfileService) {
 	s.RegisterService(&Profile_ServiceDesc, srv)
 }
 
-func _Profile_ProfileByNNMeter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Profile_ProfileWithArgs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ProfileServer).ProfileByNNMeter(ctx, in)
+		return srv.(ProfileServer).ProfileWithArgs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.Profile/profileByNNMeter",
+		FullMethod: "/protos.Profile/profileWithArgs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProfileServer).ProfileByNNMeter(ctx, req.(*ProfileRequest))
+		return srv.(ProfileServer).ProfileWithArgs(ctx, req.(*ProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Profile_GetProfileAbility_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).GetProfileAbility(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.Profile/getProfileAbility",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).GetProfileAbility(ctx, req.(*ProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +131,12 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ProfileServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "profileByNNMeter",
-			Handler:    _Profile_ProfileByNNMeter_Handler,
+			MethodName: "profileWithArgs",
+			Handler:    _Profile_ProfileWithArgs_Handler,
+		},
+		{
+			MethodName: "getProfileAbility",
+			Handler:    _Profile_GetProfileAbility_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

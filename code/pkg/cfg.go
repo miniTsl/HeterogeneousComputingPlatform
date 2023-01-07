@@ -1,4 +1,4 @@
-package internal
+package pkg
 
 type Cfg struct {
 	jumpServerCfg ServerCfg `yaml:"jumpServer"`

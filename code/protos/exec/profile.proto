@@ -4,7 +4,11 @@ package protos;
 
 
 service Profile{
-  rpc profileByNNMeter(ProfileRequest) returns (ProfileResponse){}
+
+  rpc profileWithArgs(ProfileRequest) returns (ProfileResponse){}
+
+  // 获取分析能力
+  rpc getProfileAbility(ProfileRequest) returns (ProfileResponse){}
 }
 
 
@@ -22,9 +26,6 @@ message ProfileRequest{
   }
 }
 
-
-
-
 message ProfileResponse{
   string msg = 1;
 }
@@ -40,3 +41,4 @@ message NNMeterArgs{
   string version = 2;
   string framework = 3;
 }
+

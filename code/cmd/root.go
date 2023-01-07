@@ -5,6 +5,7 @@ import (
 	"HCPlatform/code/pkg"
 	"HCPlatform/code/protos/exec"
 	"HCPlatform/code/protos/register"
+	"HCPlatform/code/protos/term"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -32,7 +33,7 @@ var (
 				log.Fatal("Fatal happend when reading cfg file")
 				return
 			}
-			cfg := internal.Cfg{}
+			cfg := pkg.Cfg{}
 
 			err = yaml.Unmarshal(data, &cfg)
 			if err != nil {
@@ -42,6 +43,7 @@ var (
 			//deviceCfg := cfg.GetDeviceCfg()
 			//serverCfg := cfg.GetServerCfg()
 			serverIP, serverPort := "0.0.0.0", 9520
+
 			if asDeviceClient {
 
 				conn, err := grpc.Dial(fmt.Sprintf("%s:%d", serverIP, serverPort), grpc.WithInsecure())
@@ -68,28 +70,44 @@ var (
 )
 
 func launchRegisterService(ip string, port int) {
-	l := pkg.NewNetListener(ip, port)
+	l := internal.NewNetListener(ip, port)
 	s := grpc.NewServer()
-	rs := protos.RegisterService{}
+	rs := pkg.RegisterService{}
 	protos.RegisterReisgterServer(s, &rs)
 	err := s.Serve(l)
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
-
 }
 
 func launchProfileService(ip string, port int) {
-	l := pkg.NewNetListener(ip, port)
+	l := internal.NewNetListener(ip, port)
 	// 此处设置最佳发送文件大小512M
 	var options = []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 512),
 		grpc.MaxSendMsgSize(1024 * 1024 * 512),
 	}
 	s := grpc.NewServer(options...)
-	rs := exec.ProfileService{}
+	rs := pkg.ProfileService{}
 	exec.RegisterProfileServer(s, &rs)
+	err := s.Serve(l)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+}
+
+func launchTerminalService(ip string, port int) {
+	l := internal.NewNetListener(ip, port)
+	// 此处设置最佳发送文件大小512M
+	var options = []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(1024 * 1024 * 512),
+		grpc.MaxSendMsgSize(1024 * 1024 * 512),
+	}
+	s := grpc.NewServer(options...)
+	rs := pkg.TermnialService{}
+	term.RegisterTerminalServer(s, &rs)
 	err := s.Serve(l)
 	if err != nil {
 		log.Error(err.Error())

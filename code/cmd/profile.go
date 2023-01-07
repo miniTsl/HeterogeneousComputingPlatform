@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"HCPlatform/code/pkg"
 	"HCPlatform/code/protos/exec"
 	"context"
 	"fmt"
@@ -34,9 +35,9 @@ var (
 			defer conn.Close()
 			c := exec.NewProfileClient(conn)
 			fmt.Println("connect to ", serverIP)
-			req := exec.NewProfileRequest(modelPath, nnmeterPredictorName, nnmeterPredictorType)
+			req := pkg.NewProfileRequest(modelPath, nnmeterPredictorName, nnmeterPredictorType)
 			fmt.Println("upload model", modelPath, " to ", serverIP)
-			res, err := c.ProfileByNNMeter(context.Background(), req)
+			res, err := c.ProfileWithArgs(context.Background(), req)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -47,13 +48,15 @@ var (
 	}
 )
 
+// go run code/main.go profile --profilerName=nn-meter --nnmeterPredictorName=cortexA76cpu_tflite21 --nnmeterPredictorType=onnx --modelPath=D:\code\HeterogeneousComputingPlatform\model\resnet18-12.onnx
+// go run code/main.go profile --profilerName=nn-meter --nnmeterPredictorName=adreno640gpu_tflite21 --nnmeterPredictorType=onnx --modelPath=D:\code\HeterogeneousComputingPlatform\model\resnet18-12.onnx
 func init() {
 	//connectCmd.PersistentFlags().BoolVar(&NNMeter, "nn-meter", true, "profile by nn-meter")
 	profileCmd.PersistentFlags().StringVar(&modelPath, "modelPath", "", "devcie configuration")
 	profileCmd.MarkPersistentFlagRequired("modelPath")
 	profileCmd.PersistentFlags().StringVar(&profilerName, "profilerName", "nn-meter", "optional: nn-meter,paddle-lite,tensorflow-lite,onnxruntime")
 	profileCmd.MarkPersistentFlagRequired("profilerName")
-	profileCmd.PersistentFlags().StringVar(&nnmeterPredictorName, "nn-meter predictor", "cortexA76cpu_tflite21", "optional: cortexA76cpu_tflite21,adreno640gpu_tflite21,adreno630gpu_tflite21,myriadvpu_openvino2019r2")
-	profileCmd.PersistentFlags().StringVar(&nnmeterPredictorType, "nn-meter framework", "onnx", "optional: tensorflow,onnxruntime,torch")
+	profileCmd.PersistentFlags().StringVar(&nnmeterPredictorName, "nnmeterPredictorName", "cortexA76cpu_tflite21", "optional: cortexA76cpu_tflite21,adreno640gpu_tflite21,adreno630gpu_tflite21,myriadvpu_openvino2019r2")
+	profileCmd.PersistentFlags().StringVar(&nnmeterPredictorType, "nnmeterPredictorType", "onnx", "optional: tensorflow,onnx,torch")
 
 }

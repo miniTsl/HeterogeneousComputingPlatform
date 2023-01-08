@@ -1,7 +1,7 @@
-package pkg
+package exec
 
 import (
-	"HCPlatform/code/protos/exec"
+	"HCPlatform/code/pkg"
 	"context"
 	"fmt"
 	"io"
@@ -12,7 +12,7 @@ import (
 type ProfileService struct {
 }
 
-func (s *ProfileService) GetProfileAbility(ctx context.Context, request *exec.ProfileRequest) (*exec.ProfileResponse, error) {
+func (s *ProfileService) GetProfileAbility(ctx context.Context, request *ProfileRequest) (*ProfileResponse, error) {
 	//TODO implement me
 	/*
 		returns the platform profiling ability
@@ -20,8 +20,8 @@ func (s *ProfileService) GetProfileAbility(ctx context.Context, request *exec.Pr
 	panic("implement me")
 }
 
-func (s *ProfileService) ProfileWithArgs(ctx context.Context, request *exec.ProfileRequest) (*exec.ProfileResponse, error) {
-	resp := new(exec.ProfileResponse)
+func (s *ProfileService) ProfileWithArgs(ctx context.Context, request *ProfileRequest) (*ProfileResponse, error) {
+	resp := new(ProfileResponse)
 
 	path, err := convertBytesToFile(request.ModelFile.Filename, request.ModelFile.Data)
 	if err != nil {
@@ -40,7 +40,7 @@ func (s *ProfileService) mustEmbedUnimplementedProfileServer() {
 
 func profileByNNMeter(path string, predictor string, version string, framework string) string {
 	//打开shell查看执行状态...
-	shell, _ := NewPowerShell()
+	shell, _ := pkg.NewPowerShell()
 	//打开nn-meter执行环境
 	sout, serr, err := shell.Execute("conda activate nn-meter")
 	sout, serr, err = shell.Execute(fmt.Sprintf("nn-meter predict --predictor %s --predictor-version %s --%s %s", predictor, version, framework, path))
@@ -52,28 +52,53 @@ func profileByNNMeter(path string, predictor string, version string, framework s
 	return sout
 }
 
-func profileByPaddleLite(path string, version string, device uint64) string {
+func profileByPaddleLite(path string, version string, deviceName string) string {
+	// First,call RPC Register Service to alloc deviceId.
+
+	// Second,call RPC Terminal Service to open a shell by allocated deviceId.
+
+	// Third, run specified commands to profile the submitted model.
+
+	//
 
 	return ""
 }
 
-func NewProfileRequest(path string, nnmeterPredictorName string, nnmeterPredictorFramework string) *exec.ProfileRequest {
-	file := new(exec.File)
+func NewProfilePaddleLiteRequest(path string, deviceName string, paddleVersion string) *ProfileRequest {
+	file := new(File)
 	data, size := convertFileToBytes(path)
 	file.Data = data
 	file.Size = size
 	if size == 0 {
 		return nil
 	}
-	//fmt.Println(path)
 	file.Filename = splitFilenameFromFilePath(path)
-	//fmt.Println(file.Filename)
 	if file.Filename == "" {
 		return nil
 	}
-	rq := new(exec.ProfileRequest)
+	rq := new(ProfileRequest)
 	rq.ModelFile = file
-	rq.Args = &exec.ProfileRequest_NnmeterArgs{NnmeterArgs: &exec.NNMeterArgs{
+	rq.Args = &ProfileRequest_PaddleLiteArgs{PaddleLiteArgs: &PaddleLiteArgs{
+		Version: "latest",
+	}}
+	return rq
+}
+
+func NewProfileNNMeterRequest(path string, nnmeterPredictorName string, nnmeterPredictorFramework string) *ProfileRequest {
+	file := new(File)
+	data, size := convertFileToBytes(path)
+	file.Data = data
+	file.Size = size
+	if size == 0 {
+		return nil
+	}
+	file.Filename = splitFilenameFromFilePath(path)
+	if file.Filename == "" {
+		return nil
+	}
+	rq := new(ProfileRequest)
+	rq.ModelFile = file
+	rq.Args = &ProfileRequest_NnmeterArgs{NnmeterArgs: &NNMeterArgs{
 		Predictor: nnmeterPredictorName,
 		Version:   "1.0",
 		Framework: nnmeterPredictorFramework,

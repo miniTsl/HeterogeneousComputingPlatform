@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TerminalClient interface {
 	NewTerminal(ctx context.Context, in *TerminalRequest, opts ...grpc.CallOption) (*TerminalResponse, error)
-	CloseTerminal(ctx context.Context, in *TerminalResponse, opts ...grpc.CallOption) (*TerminalResponse, error)
+	CloseTerminal(ctx context.Context, in *TerminalRequest, opts ...grpc.CallOption) (*TerminalResponse, error)
 	ExecCommand(ctx context.Context, in *TerminalRequest, opts ...grpc.CallOption) (*TerminalResponse, error)
 }
 
@@ -44,7 +44,7 @@ func (c *terminalClient) NewTerminal(ctx context.Context, in *TerminalRequest, o
 	return out, nil
 }
 
-func (c *terminalClient) CloseTerminal(ctx context.Context, in *TerminalResponse, opts ...grpc.CallOption) (*TerminalResponse, error) {
+func (c *terminalClient) CloseTerminal(ctx context.Context, in *TerminalRequest, opts ...grpc.CallOption) (*TerminalResponse, error) {
 	out := new(TerminalResponse)
 	err := c.cc.Invoke(ctx, "/protos.Terminal/CloseTerminal", in, out, opts...)
 	if err != nil {
@@ -67,7 +67,7 @@ func (c *terminalClient) ExecCommand(ctx context.Context, in *TerminalRequest, o
 // for forward compatibility
 type TerminalServer interface {
 	NewTerminal(context.Context, *TerminalRequest) (*TerminalResponse, error)
-	CloseTerminal(context.Context, *TerminalResponse) (*TerminalResponse, error)
+	CloseTerminal(context.Context, *TerminalRequest) (*TerminalResponse, error)
 	ExecCommand(context.Context, *TerminalRequest) (*TerminalResponse, error)
 	mustEmbedUnimplementedTerminalServer()
 }
@@ -79,7 +79,7 @@ type UnimplementedTerminalServer struct {
 func (UnimplementedTerminalServer) NewTerminal(context.Context, *TerminalRequest) (*TerminalResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewTerminal not implemented")
 }
-func (UnimplementedTerminalServer) CloseTerminal(context.Context, *TerminalResponse) (*TerminalResponse, error) {
+func (UnimplementedTerminalServer) CloseTerminal(context.Context, *TerminalRequest) (*TerminalResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CloseTerminal not implemented")
 }
 func (UnimplementedTerminalServer) ExecCommand(context.Context, *TerminalRequest) (*TerminalResponse, error) {
@@ -94,7 +94,7 @@ type UnsafeTerminalServer interface {
 	mustEmbedUnimplementedTerminalServer()
 }
 
-func RegisterTerminalServer(s grpc.ServiceRegistrar, srv *TermnialService) {
+func RegisterTerminalServer(s grpc.ServiceRegistrar, srv TerminalServer) {
 	s.RegisterService(&Terminal_ServiceDesc, srv)
 }
 
@@ -117,7 +117,7 @@ func _Terminal_NewTerminal_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _Terminal_CloseTerminal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TerminalResponse)
+	in := new(TerminalRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func _Terminal_CloseTerminal_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/protos.Terminal/CloseTerminal",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TerminalServer).CloseTerminal(ctx, req.(*TerminalResponse))
+		return srv.(TerminalServer).CloseTerminal(ctx, req.(*TerminalRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

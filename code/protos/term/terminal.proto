@@ -6,7 +6,7 @@ package protos;
 service Terminal{
 
   rpc NewTerminal(TerminalRequest) returns (TerminalResponse){}
-  rpc CloseTerminal(TerminalResponse) returns (TerminalResponse){}
+  rpc CloseTerminal(TerminalRequest) returns (TerminalResponse){}
   rpc ExecCommand(TerminalRequest) returns (TerminalResponse){}
 
 }

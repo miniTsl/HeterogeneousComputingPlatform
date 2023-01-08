@@ -23,6 +23,7 @@ message DeviceMessage {
   DeviceMessage  deviceParent = 4;
   Type    _type = 5;
   uint64  allocedId  = 6;
+  int32   terminalPort = 7;
 }
 
 service Reisgter{
@@ -33,7 +34,6 @@ service Reisgter{
 }
 
 message RegisterRequest{
-
   repeated DeviceMessage devices = 1;
 }
 
@@ -44,4 +44,5 @@ message RegisterResponse{
   }
   state stateCode = 1;
   string  msg = 2;
+  repeated DeviceMessage devices = 3;
 }

@@ -1,6 +1,7 @@
 package register
 
 import (
+	"container/list"
 	context "context"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -63,23 +64,36 @@ func (s *RegisterService) AllocDevice(ctx context.Context, request *RegisterRequ
 	resp := new(RegisterResponse)
 	result := ""
 	devices := request.Devices
+	successAllocatedDevices := list.New()
 	for _, device := range devices {
 		deviceName := device.GetDeviceName()
+		// check the device has or not registered on server
 		deviceId, ok := registeredDevicesMap[deviceName]
 		if !ok {
 			result = fmt.Sprintf("%s\nDevice:%s is not in registered device list.", result, deviceName)
 			continue
 		}
-		device, ok := usedDevicesMap[deviceId]
+		// check the device has or not allocated to others
+		_, ok = usedDevicesMap[deviceId]
 		if ok {
 			result = fmt.Sprintf("%s\nDevice:%s is not free now. You can't connect it.", result, deviceName)
 			continue
 		}
+		// fetch the device message from unusedMap
+		registerDevice := unusedDevicesMap[deviceId]
+		usedDevicesMap[deviceId] = registerDevice
 		delete(unusedDevicesMap, deviceId)
-		usedDevicesMap[deviceId] = device
 		result = fmt.Sprintf("%s\nDevice:%s is allocated to you.", result, deviceName)
+		successAllocatedDevices.PushBack(registerDevice)
 	}
 	resp.Msg = result
+	resp.Devices = make([]*DeviceMessage, successAllocatedDevices.Len())
+	index := 0
+	for i := successAllocatedDevices.Front(); i != nil; i = i.Next() {
+		resp.Devices[index] = (i.Value).(*DeviceMessage)
+
+		index++
+	}
 	return resp, nil
 }
 
@@ -100,8 +114,8 @@ func (s *RegisterService) FreeDevice(ctx context.Context, request *RegisterReque
 			result = fmt.Sprintf("%s\nDevice:%s is free now. You can't free it again.", result, deviceName)
 			continue
 		}
+		unusedDevicesMap[deviceId] = usedDevicesMap[deviceId]
 		delete(usedDevicesMap, deviceId)
-		unusedDevicesMap[deviceId] = device
 		result = fmt.Sprintf("%s\nDevice:%s is free, everyone can connect it now.", result, deviceName)
 	}
 	resp.Msg = result
@@ -158,11 +172,11 @@ func FastRegisterDevices(serverIP string, serverPort int, devices []*DeviceMessa
 }
 
 // This function is for client to fast call
-func FastAllocDevices(serverIP string, serverPort int, devicesName []string) (string, error) {
+func FastAllocDevices(serverIP string, serverPort int, devicesName []string) ([]*DeviceMessage, error) {
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", serverIP, serverPort), grpc.WithInsecure())
 	if err != nil {
 		log.Error(err)
-		return "", err
+		return []*DeviceMessage{}, err
 	}
 	defer conn.Close()
 	c := NewReisgterClient(conn)
@@ -175,14 +189,14 @@ func FastAllocDevices(serverIP string, serverPort int, devicesName []string) (st
 	res, err := c.AllocDevice(context.Background(), req)
 	if err != nil {
 		log.Error(err)
-		return res.Msg, err
+		return []*DeviceMessage{}, err
 	}
 	err = conn.Close()
 	if err != nil {
 		log.Error(err)
-		return res.Msg, err
+		return []*DeviceMessage{}, err
 	}
-	return res.Msg, nil
+	return res.Devices, nil
 }
 
 // This function is for client to fast call

@@ -7,81 +7,79 @@ import (
 )
 
 type Cfg struct {
-	jumpServerCfg ServerCfg `yaml:"ServerCfg"`
-	deviceCfg     DeviceCfg `yaml:"DeviceCfg"`
+	ServerList  []ServerCfg `yaml:"ServersList"`
+	DevicesList []DeviceCfg `yaml:"DevicesList"`
 }
 
 type ServerCfg struct {
-	ip           string `yaml:"ip"`
-	registerPort int    `yaml:"registerPort"`
-	terminalPort int    `yaml:"terminalPort"`
-	profilePort  int    `yaml:"profilePort"`
+	ServerName   string `yaml:"serverName"`
+	Ip           string `yaml:"ip"`
+	RegisterPort int    `yaml:"registerPort"`
+	TerminalPort int    `yaml:"terminalPort"`
+	ProfilePort  int    `yaml:"profilePort"`
 }
 
 type DeviceCfg struct {
-	ip           string `yaml:"ip"`
-	terminalPort int    `yaml:"terminalPort"`
-	deviceName   string `yaml:"deviceName"`
-	deviceId     uint64 `yaml:"deviceId"`
-	_level       uint64 `yaml:"level"`
-	_type        uint64 `yaml:"type"`
+	Ip           string `yaml:"ip"`
+	TerminalPort int    `yaml:"terminalPort"`
+	DeviceName   string `yaml:"deviceName"`
+	DeviceId     uint64 `yaml:"deviceId"`
+	Level        uint64 `yaml:"level"`
+	Type         uint64 `yaml:"type"`
 }
 
-func (cfg *Cfg) GetServerCfg() ServerCfg {
-	return cfg.jumpServerCfg
-}
-
-func (cfg *Cfg) GetDeviceCfg() DeviceCfg {
-	return cfg.deviceCfg
-}
-
+//	func (cfg *Cfg) GetServerCfg() []ServerCfg {
+//		return cfg.serverList
+//	}
+//
+//	func (cfg *Cfg) GetDeviceCfg() []DeviceCfg {
+//		return cfg.devicesList
+//	}
 func (cfg *ServerCfg) GetNetAddress() string {
-	return cfg.ip
+	return cfg.Ip
 }
+
 func (cfg *ServerCfg) GetRegisterPort() int {
-	return cfg.registerPort
+	return cfg.RegisterPort
 }
 func (cfg *ServerCfg) GetTerminalPort() int {
-	return cfg.terminalPort
+	return cfg.TerminalPort
 }
 func (cfg *ServerCfg) GetProfilePort() int {
-	return cfg.profilePort
+	return cfg.ProfilePort
 }
 
 func (cfg *DeviceCfg) GetNetAddress() string {
-	return cfg.ip
+	return cfg.Ip
 }
 
 func (cfg *DeviceCfg) GetDeviceName() string {
-	return cfg.deviceName
+	return cfg.DeviceName
 }
 
 func (cfg *DeviceCfg) GetDeviceID() uint64 {
-	return cfg.deviceId
+	return cfg.DeviceId
 }
 
 func (cfg *DeviceCfg) GetDeviceLevel() uint64 {
-	return cfg._level
+	return cfg.Level
 }
 
 func (cfg *DeviceCfg) GetDeviceType() uint64 {
-	return cfg._type
+	return cfg.Type
 }
 
-func GetConfig(path string) (ServerCfg, DeviceCfg) {
+func GetConfig(path string) ([]ServerCfg, []DeviceCfg) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal("Fatal happend when reading cfg file")
-		return ServerCfg{}, DeviceCfg{}
+		return []ServerCfg{}, []DeviceCfg{}
 	}
-	cfg := make(map[string]interface{})
+	cfg := Cfg{}
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
 		log.Fatal(err)
-		return ServerCfg{}, DeviceCfg{}
+		return []ServerCfg{}, []DeviceCfg{}
 	}
-	//compellent type cast
-	deviceCfg := (cfg["DeviceCfg"]).(DeviceCfg)
-	serverCfg := (cfg["ServerCfg"]).(ServerCfg)
-	return serverCfg, deviceCfg
+	return cfg.ServerList, cfg.DevicesList
 }

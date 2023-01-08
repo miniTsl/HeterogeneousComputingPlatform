@@ -1,13 +1,14 @@
-ServerCfg:
-  ip : 172.16.101.124
-  registerPort : 9520
-  terminalPort : 9521
-  profilePort : 9522
+ServersList:
+  - serverName: main
+    ip: 127.0.0.1
+    registerPort: 9520
+    terminalPort: 9521
+    profilePort: 9522
 
-DeviceCfg:
-  ip : 127.0.0.1
-  terminalPort : 9521
-  deviceName : ROG-LAPTOP
-  deviceId : 0
-  level : 1
-  type : 2
+DevicesList:
+  - deviceName : ROG-LAPTOP
+    ip : 127.0.0.1
+    terminalPort : 10020
+    deviceId : 0
+    level : 1
+    type : 2

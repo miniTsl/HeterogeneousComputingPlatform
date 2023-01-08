@@ -9,62 +9,48 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"gopkg.in/yaml.v3"
-	"os"
 )
 
 var (
+	currentDevices     []*register.DeviceMessage
 	asDeviceClient     bool
 	asControlServer    bool
 	asUserClient       bool
 	cfgPath            string
 	needListAllDevices bool
-	user               string
 
 	rootCmd = &cobra.Command{
 		Use:   "hcp",
 		Short: "HCP was developed by AIoT of AIR",
 		Long:  "HCP is a heterogeneous computing platform, which was developed by AIoT of Tsinghua University's AIR Institute",
 		Run: func(cmd *cobra.Command, args []string) {
-			data, err := os.ReadFile(cfgPath)
-			if err != nil {
-				log.Fatal("Fatal happend when reading cfg file")
-				return
-			}
-			cfg := pkg.Cfg{}
-
-			err = yaml.Unmarshal(data, &cfg)
-			if err != nil {
-				log.Fatal(err)
-				return
-			}
-			//deviceCfg := cfg.GetDeviceCfg()
-			//serverCfg := cfg.GetServerCfg()
-			serverIP, serverPort := "0.0.0.0", 9520
-
-			if asDeviceClient {
-
-				conn, err := grpc.Dial(fmt.Sprintf("%s:%d", serverIP, serverPort), grpc.WithInsecure())
-				if err != nil {
-					log.Fatal(err)
-				}
-				defer conn.Close()
-				c := protos.NewReisgterClient(conn)
-				var devices []*protos.DeviceMessage
-				req := &protos.RegisterRequest{Devices: devices}
-				res, err := c.ResgisterDevice(context.Background(), req)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				log.Info(res.Msg)
-			}
+			serverList, deviceList := pkg.GetConfig(cfgPath)
+			serverCfg := serverList[0]
+			serverIP := serverCfg.GetNetAddress()
+			registerPort, terminalPort, profilePort := serverCfg.GetRegisterPort(), serverCfg.GetTerminalPort(), serverCfg.GetProfilePort()
 			if asControlServer {
-				//launchRegisterService(serverIP,serverPort)
-				launchProfileService(serverIP, serverPort)
+				launchRegisterService(serverIP, registerPort)
+				//launchProfileService(serverIP, profilePort)
+				//launchTerminalService(serverIP, terminalPort)
+			} else if asDeviceClient {
+				deviceMsg := make([]*register.DeviceMessage, len(deviceList))
+				for i, deviceCfg := range deviceList {
+					deviceMsg[i] = &register.DeviceMessage{
+						DeviceName:    deviceCfg.GetDeviceName(),
+						DeviceAddress: deviceCfg.GetNetAddress(),
+						XLevel:        register.DeviceMessage_Level(deviceCfg.GetDeviceLevel()),
+						XType:         register.DeviceMessage_Type(deviceCfg.GetDeviceType()),
+						TerminalPort:  int32(deviceCfg.TerminalPort),
+					}
+				}
+				currentDevices = deviceMsg
+				register.FastRegisterDevices(serverIP, registerPort, deviceMsg)
+				for _, deviceCfg := range deviceList {
+					launchTerminalService(deviceCfg.GetNetAddress(), deviceCfg.TerminalPort)
+				}
 			}
+			fmt.Println(registerPort, terminalPort, profilePort)
 		},
 	}
 )
@@ -72,8 +58,8 @@ var (
 func launchRegisterService(ip string, port int) {
 	l := internal.NewNetListener(ip, port)
 	s := grpc.NewServer()
-	rs := pkg.RegisterService{}
-	protos.RegisterReisgterServer(s, &rs)
+	rs := register.RegisterService{}
+	register.RegisterReisgterServer(s, &rs)
 	err := s.Serve(l)
 	if err != nil {
 		log.Error(err.Error())
@@ -89,7 +75,7 @@ func launchProfileService(ip string, port int) {
 		grpc.MaxSendMsgSize(1024 * 1024 * 512),
 	}
 	s := grpc.NewServer(options...)
-	rs := pkg.ProfileService{}
+	rs := exec.ProfileService{}
 	exec.RegisterProfileServer(s, &rs)
 	err := s.Serve(l)
 	if err != nil {
@@ -106,7 +92,7 @@ func launchTerminalService(ip string, port int) {
 		grpc.MaxSendMsgSize(1024 * 1024 * 512),
 	}
 	s := grpc.NewServer(options...)
-	rs := pkg.TermnialService{}
+	rs := term.TermnialService{}
 	term.RegisterTerminalServer(s, &rs)
 	err := s.Serve(l)
 	if err != nil {
@@ -124,7 +110,6 @@ func init() {
 	rootCmd.AddCommand(profileCmd)
 	rootCmd.PersistentFlags().BoolVarP(&needListAllDevices, "list", "l", false, "list all devices")
 	rootCmd.PersistentFlags().BoolVarP(&asDeviceClient, "cli", "c", false, "run as device client")
-	rootCmd.PersistentFlags().BoolVarP(&asUserClient, "user", "u", false, "run as user client")
 	rootCmd.PersistentFlags().BoolVarP(&asControlServer, "server", "s", false, "run as server")
 	rootCmd.PersistentFlags().StringVar(&cfgPath, "cfg", "", "devcie configuration")
 }

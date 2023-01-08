@@ -1,11 +1,13 @@
-jumpServer:
-  ip: 172.16.101.124
-  port: 9520
+ServerCfg:
+  ip : 172.16.101.124
+  registerPort : 9520
+  terminalPort : 9521
+  profilePort : 9522
 
-device:
-  ip: 172.16.101.124
-  port: 9521
-  deviceName: ROG-LAPTOP
-  deviceId: 20221120
-  level:  1
-  type: 2
+DeviceCfg:
+  ip : 127.0.0.1
+  terminalPort : 9521
+  deviceName : ROG-LAPTOP
+  deviceId : 0
+  level : 1
+  type : 2

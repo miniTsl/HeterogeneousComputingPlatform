@@ -7,7 +7,6 @@
 package term
 
 import (
-	"HCPlatform/code/pkg"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -95,7 +94,7 @@ type UnsafeTerminalServer interface {
 	mustEmbedUnimplementedTerminalServer()
 }
 
-func RegisterTerminalServer(s grpc.ServiceRegistrar, srv *pkg.TermnialService) {
+func RegisterTerminalServer(s grpc.ServiceRegistrar, srv *TermnialService) {
 	s.RegisterService(&Terminal_ServiceDesc, srv)
 }
 

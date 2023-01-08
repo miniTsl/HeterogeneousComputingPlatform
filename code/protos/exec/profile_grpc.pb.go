@@ -7,7 +7,6 @@
 package exec
 
 import (
-	"HCPlatform/code/pkg"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -83,7 +82,7 @@ type UnsafeProfileServer interface {
 	mustEmbedUnimplementedProfileServer()
 }
 
-func RegisterProfileServer(s grpc.ServiceRegistrar, srv *pkg.ProfileService) {
+func RegisterProfileServer(s grpc.ServiceRegistrar, srv *ProfileService) {
 	s.RegisterService(&Profile_ServiceDesc, srv)
 }
 

@@ -20,9 +20,10 @@ message ProfileRequest{
     onnxruntime = 3;
   }
   File modelFile = 1;
-
+  string deviceName = 2;
   oneof args {
     NNMeterArgs nnmeterArgs = 10;
+    PaddleLiteArgs paddleLiteArgs = 11;
   }
 }
 
@@ -42,3 +43,6 @@ message NNMeterArgs{
   string framework = 3;
 }
 
+message PaddleLiteArgs{
+  string version = 1;
+}

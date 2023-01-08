@@ -16,6 +16,7 @@ message TerminalRequest{
   string srcIP = 2;
   uint64 shellId = 3;
   string command = 4;
+  uint64 deviceId = 5;
 }
 
 message TerminalResponse{

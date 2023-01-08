@@ -49,9 +49,12 @@ func (s *TermnialService) ExecCommand(ctx context.Context, request *TerminalRequ
 	resp := new(TerminalResponse)
 	shellId := request.ShellId
 	shell := shellIdsMap[shellId]
+
 	sout, serr, err := shell.Execute(request.Command)
+	//log.Info(fmt.Sprintf("Result:%s", request.Command, sout))
 	resp.Result = sout
 	if err != nil {
+		log.Error(err)
 		resp.Result = fmt.Sprintf("%s\nBut happen error:%s", resp.Result, serr)
 	}
 	return resp, nil
@@ -141,6 +144,7 @@ func FastExecCommand(serverIP string, serverPort int, deviceId uint64, shellId u
 	defer conn.Close()
 	c := NewTerminalClient(conn)
 	res, err := c.ExecCommand(context.Background(), &req)
+
 	if err != nil {
 		log.Error(err.Error())
 		return "", err

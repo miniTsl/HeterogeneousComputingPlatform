@@ -108,7 +108,7 @@ type UnsafeReisgterServer interface {
 	mustEmbedUnimplementedReisgterServer()
 }
 
-func RegisterReisgterServer(s grpc.ServiceRegistrar, srv *RegisterService) {
+func RegisterReisgterServer(s grpc.ServiceRegistrar, srv ReisgterServer) {
 	s.RegisterService(&Reisgter_ServiceDesc, srv)
 }
 

@@ -4,7 +4,7 @@
 // 	protoc        v3.19.1
 // source: message.proto
 
-package pkg
+package internal
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

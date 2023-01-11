@@ -4,7 +4,7 @@
 // - protoc             v3.19.1
 // source: register.proto
 
-package protos
+package register
 
 import (
 	context "context"
@@ -22,7 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ReisgterClient interface {
-	ResgisterDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	RegisterDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	GetAllRegisteredDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	AllocDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	FreeDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 }
 
 type reisgterClient struct {
@@ -33,9 +36,36 @@ func NewReisgterClient(cc grpc.ClientConnInterface) ReisgterClient {
 	return &reisgterClient{cc}
 }
 
-func (c *reisgterClient) ResgisterDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
+func (c *reisgterClient) RegisterDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
 	out := new(RegisterResponse)
-	err := c.cc.Invoke(ctx, "/protos.Reisgter/ResgisterDevice", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/protos.Reisgter/RegisterDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *reisgterClient) GetAllRegisteredDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
+	out := new(RegisterResponse)
+	err := c.cc.Invoke(ctx, "/protos.Reisgter/GetAllRegisteredDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *reisgterClient) AllocDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
+	out := new(RegisterResponse)
+	err := c.cc.Invoke(ctx, "/protos.Reisgter/AllocDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *reisgterClient) FreeDevice(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
+	out := new(RegisterResponse)
+	err := c.cc.Invoke(ctx, "/protos.Reisgter/FreeDevice", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +76,10 @@ func (c *reisgterClient) ResgisterDevice(ctx context.Context, in *RegisterReques
 // All implementations must embed UnimplementedReisgterServer
 // for forward compatibility
 type ReisgterServer interface {
-	ResgisterDevice(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	RegisterDevice(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	GetAllRegisteredDevice(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	AllocDevice(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	FreeDevice(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	mustEmbedUnimplementedReisgterServer()
 }
 
@@ -54,8 +87,17 @@ type ReisgterServer interface {
 type UnimplementedReisgterServer struct {
 }
 
-func (UnimplementedReisgterServer) ResgisterDevice(context.Context, *RegisterRequest) (*RegisterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResgisterDevice not implemented")
+func (UnimplementedReisgterServer) RegisterDevice(context.Context, *RegisterRequest) (*RegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterDevice not implemented")
+}
+func (UnimplementedReisgterServer) GetAllRegisteredDevice(context.Context, *RegisterRequest) (*RegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllRegisteredDevice not implemented")
+}
+func (UnimplementedReisgterServer) AllocDevice(context.Context, *RegisterRequest) (*RegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllocDevice not implemented")
+}
+func (UnimplementedReisgterServer) FreeDevice(context.Context, *RegisterRequest) (*RegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FreeDevice not implemented")
 }
 func (UnimplementedReisgterServer) mustEmbedUnimplementedReisgterServer() {}
 
@@ -70,20 +112,74 @@ func RegisterReisgterServer(s grpc.ServiceRegistrar, srv ReisgterServer) {
 	s.RegisterService(&Reisgter_ServiceDesc, srv)
 }
 
-func _Reisgter_ResgisterDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Reisgter_RegisterDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ReisgterServer).ResgisterDevice(ctx, in)
+		return srv.(ReisgterServer).RegisterDevice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.Reisgter/ResgisterDevice",
+		FullMethod: "/protos.Reisgter/RegisterDevice",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ReisgterServer).ResgisterDevice(ctx, req.(*RegisterRequest))
+		return srv.(ReisgterServer).RegisterDevice(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reisgter_GetAllRegisteredDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReisgterServer).GetAllRegisteredDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.Reisgter/GetAllRegisteredDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReisgterServer).GetAllRegisteredDevice(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reisgter_AllocDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReisgterServer).AllocDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.Reisgter/AllocDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReisgterServer).AllocDevice(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reisgter_FreeDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReisgterServer).FreeDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.Reisgter/FreeDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReisgterServer).FreeDevice(ctx, req.(*RegisterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +192,20 @@ var Reisgter_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ReisgterServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ResgisterDevice",
-			Handler:    _Reisgter_ResgisterDevice_Handler,
+			MethodName: "RegisterDevice",
+			Handler:    _Reisgter_RegisterDevice_Handler,
+		},
+		{
+			MethodName: "GetAllRegisteredDevice",
+			Handler:    _Reisgter_GetAllRegisteredDevice_Handler,
+		},
+		{
+			MethodName: "AllocDevice",
+			Handler:    _Reisgter_AllocDevice_Handler,
+		},
+		{
+			MethodName: "FreeDevice",
+			Handler:    _Reisgter_FreeDevice_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

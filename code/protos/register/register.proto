@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package="./;protos";
+option go_package="./;register";
 package protos;
 
 message DeviceMessage {
@@ -18,15 +18,19 @@ message DeviceMessage {
   }
 
   string deviceName = 1;
-  uint64 deviceId   = 2;
-  string deviceAddress = 3;
-  Level   _level = 4;
-  DeviceMessage  deviceParent = 5;
-  Type    _type = 6;
+  string deviceAddress = 2;
+  Level   _level =3;
+  DeviceMessage  deviceParent = 4;
+  Type    _type = 5;
+  uint64  allocedId  = 6;
+  int32   terminalPort = 7;
 }
 
 service Reisgter{
-  rpc ResgisterDevice(RegisterRequest) returns (RegisterResponse){}
+  rpc RegisterDevice(RegisterRequest) returns (RegisterResponse){}
+  rpc GetAllRegisteredDevice(RegisterRequest) returns (RegisterResponse){}
+  rpc AllocDevice(RegisterRequest)returns (RegisterResponse){}
+  rpc FreeDevice(RegisterRequest)returns (RegisterResponse){}
 }
 
 message RegisterRequest{
@@ -39,6 +43,6 @@ message RegisterResponse{
     error   = 1;
   }
   state stateCode = 1;
-  string  msg = 4;
-  uint64 timestamp = 5;
+  string  msg = 2;
+  repeated DeviceMessage devices = 3;
 }

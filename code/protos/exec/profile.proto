@@ -4,7 +4,11 @@ package protos;
 
 
 service Profile{
-  rpc profileByNNMeter(ProfileRequest) returns (ProfileResponse){}
+
+  rpc profileWithArgs(ProfileRequest) returns (ProfileResponse){}
+
+  // 获取分析能力
+  rpc getProfileAbility(ProfileRequest) returns (ProfileResponse){}
 }
 
 
@@ -16,14 +20,12 @@ message ProfileRequest{
     onnxruntime = 3;
   }
   File modelFile = 1;
-
+  string deviceName = 2;
   oneof args {
     NNMeterArgs nnmeterArgs = 10;
+    PaddleLiteArgs paddleLiteArgs = 11;
   }
 }
-
-
-
 
 message ProfileResponse{
   string msg = 1;
@@ -39,4 +41,8 @@ message NNMeterArgs{
   string predictor = 1;
   string version = 2;
   string framework = 3;
+}
+
+message PaddleLiteArgs{
+  string version = 1;
 }

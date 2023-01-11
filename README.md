@@ -13,10 +13,11 @@
 protoc --go_out=./ .\message.proto
 protoc --go_out=./ .\register.proto
 protoc --go_out=./ .\profile.proto
-protoc --go-grpc_out=. .\register.proto
+protoc --go_out=. .\terminal.proto
 
 protoc --go-grpc_out=. .\register.proto
 protoc --go-grpc_out=. .\profile.proto
+protoc --go-grpc_out=. .\terminal.proto
 ## TODO
 1. 实现跳板机和一级设备分离
 2. 实现一级设备自动识别,热插拔二级设备

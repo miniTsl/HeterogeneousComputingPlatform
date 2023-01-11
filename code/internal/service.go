@@ -1,7 +1,7 @@
-package pkg
+package internal
 
 import (
-	"HCPlatform/code/internal"
+	"HCPlatform/code/pkg"
 	"container/list"
 	"fmt"
 	"log"
@@ -62,12 +62,12 @@ type Handler struct {
 	id         string // TODO 实现id管理
 	isExited   bool   // TODO 检查server中维护的handler是否到期
 	remoteConn net.Conn
-	shell      *internal.Terminal
+	shell      *pkg.Terminal
 }
 
 func processConn(conn net.Conn) *Handler {
 	//_shell, err := shell.NewPowerShell()
-	var _shell *internal.Terminal
+	var _shell *pkg.Terminal
 	var err error
 	sysType := runtime.GOOS
 	/* go tool dist list
@@ -120,20 +120,20 @@ func processConn(conn net.Conn) *Handler {
 	*/
 	if sysType == "linux" {
 		// LINUX系统
-		_shell, err = internal.NewBourneAgainShell()
+		_shell, err = pkg.NewBourneAgainShell()
 		if err != nil {
 			fmt.Printf("fail to create bash\n")
 			return nil
 		}
 
 	} else if sysType == "windows" {
-		_shell, err = internal.NewPowerShell()
+		_shell, err = pkg.NewPowerShell()
 		if err != nil {
 			fmt.Printf("fail to create powershell\n")
 			return nil
 		}
 	} else if sysType == "darwin" {
-		_shell, err = internal.NewZShell()
+		_shell, err = pkg.NewZShell()
 		if err != nil {
 			fmt.Printf("fail to create zsh\n")
 			return nil

@@ -3,46 +3,55 @@ package cmd
 import (
 	"HCPlatform/code/protos/register"
 	"HCPlatform/code/protos/term"
+	"bufio"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var (
 	listAllDevices    bool
 	connectDeviceName string
-	connectCmd        = &cobra.Command{
+	// TODO 暂时禁用
+	interactive bool
+	connectCmd  = &cobra.Command{
 		Use:   "connect",
 		Short: "Connect a device",
 		Long:  "Conect a device which you have selected",
 		Run: func(cmd *cobra.Command, args []string) {
 			//TODO: 根据设备查询连接方式
-
+			//
 			res, _ := register.FastFreeDevices("127.0.0.1", 9520, []string{"ROG-LAPTOP"})
 			res, _ = register.FastListAllDevices("127.0.0.1", 9520)
-			log.Info(res)
 			devices, _ := register.FastAllocDevices("127.0.0.1", 9520, []string{"ROG-LAPTOP"})
-			log.Info(res)
-			//TODO 根据设备号拿到目标Device的IP
+			//log.Info(res)
+			////TODO 根据设备号拿到目标Device的IP
 			dstIP, dstPort := devices[0].GetDeviceAddress(), devices[0].GetTerminalPort()
-			log.Info(fmt.Sprintf("Get,%s,%d", dstIP, dstPort))
-			shellId, _ := term.FastNewTerminal(dstIP, int(dstPort), 0, 0)
-			if shellId != 0 {
-				res, _ = term.FastExecCommand(dstIP, int(dstPort), 0, shellId, "ls")
-				log.Info(res)
-				command := "cd .."
-				fmt.Println(isUtf8([]byte(command)))
-				res, _ = term.FastExecCommand(dstIP, int(dstPort), 0, shellId, command)
-				log.Info(res)
-				command = "pwd"
-				fmt.Println(isUtf8([]byte(command)))
-				res, _ = term.FastExecCommand(dstIP, int(dstPort), 0, shellId, command)
-				log.Info(res)
+			// We will access to device's command line,only for level1 device.You can launch ADBShell by your self
+			if interactive {
+				var inputContent string = ""
+				shellId, _ := term.FastNewTerminal(dstIP, int(dstPort), 0, 0)
+				for inputContent != "!exit" {
+					//_, err := fmt.Scanln(&inputContent)
+					reader := bufio.NewReader(os.Stdin)          // 标准输入输出
+					inputContent, err := reader.ReadString('\n') // 回车结束
+					if err != nil {
+						log.Error(err)
+						return
+					}
+					//shell, _ := pkg.NewPowerShell()
+					//
+					//sout, serr, _ := shell.Execute(inputContent)
+					//fmt.Println(fmt.Sprintf("%s", sout))
+					res, _ = term.FastExecCommand(dstIP, int(dstPort), 0, shellId, inputContent)
+					fmt.Println(res)
+					//log.Info(res)
+				}
 				shellId, _ = term.FastCloseTerminal(dstIP, int(dstPort), 0, shellId)
 			}
 			res, _ = register.FastFreeDevices("127.0.0.1", 9520, []string{"ROG-LAPTOP"})
-			log.Info(res)
-
+			//log.Info(res)
 		},
 	}
 )
@@ -50,7 +59,7 @@ var (
 func init() {
 	connectCmd.PersistentFlags().StringVar(&connectDeviceName, "deviceName", "", "you have selected devicename")
 	connectCmd.PersistentFlags().BoolVar(&listAllDevices, "listDevices", false, "list all devices registered to server")
-
+	connectCmd.PersistentFlags().BoolVar(&interactive, "interactive", false, "Interactive access to the command line")
 }
 
 func preNUm(data byte) int {

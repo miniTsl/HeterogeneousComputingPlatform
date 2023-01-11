@@ -28,6 +28,7 @@ message ProfileRequest{
   }
   File modelFile = 1;
   string deviceName = 2;
+  Type type = 3;
   oneof args {
     NNMeterArgs nnmeterArgs = 10;
     PaddleLiteArgs paddleLiteArgs = 11;

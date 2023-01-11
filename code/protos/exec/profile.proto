@@ -9,6 +9,12 @@ service Profile{
 
   // 获取分析能力
   rpc getProfileAbility(ProfileRequest) returns (ProfileResponse){}
+
+  // TODO 获取模型静态属性
+  rpc getModelStaticAttr(ProfileRequest) returns (ProfileResponse){}
+
+  // TODO 获取设备静态属性
+  rpc getDeviceStaticAttr(ProfileRequest) returns (ProfileResponse){}
 }
 
 
@@ -18,12 +24,15 @@ message ProfileRequest{
     paddlelite = 1;
     tflite = 2;
     onnxruntime = 3;
+    FAI = 4;
   }
   File modelFile = 1;
   string deviceName = 2;
   oneof args {
     NNMeterArgs nnmeterArgs = 10;
     PaddleLiteArgs paddleLiteArgs = 11;
+    FAIArgs faiArgs = 12;
+    TFLiteArgs tfliteArgs = 13;
   }
 }
 
@@ -45,4 +54,92 @@ message NNMeterArgs{
 
 message PaddleLiteArgs{
   string version = 1;
+}
+
+message FAIArgs{
+
+}
+
+message TFLiteArgs{
+  enum DeviceType{
+    cpu = 0;
+    gpu = 1;
+    nnapi =2 ;
+    hexagon = 3;
+    xnnpack = 4;
+    coreml = 5;
+  }
+  DeviceType deviceType = 1;
+  TFLiteParameters params = 2;
+  TFLiteDelegateParameters delegateParams = 3;
+
+}
+
+message TFLiteParameters{
+  string graph = 1;
+  int32 num_threads = 2;
+  int32 warmup_runs = 3;
+  int32 num_runs = 4;
+  float max_secs = 5;
+  float run_delay = 6;
+  float run_frequency = 7;
+  bool enable_op_profiling = 8;
+  int32 max_profiling_buffer_entries = 9;
+  bool allow_dynamic_profiling_buffer_increase = 10;
+  string profiling_output_csv_file = 11;
+  bool print_preinvoke_state = 12;
+  bool print_postinvoke_state = 13;
+  bool report_peak_memory_footprint = 14;
+  int32 memory_footprint_check_interval_ms = 15;
+  bool dry_run = 16;
+  bool verbose = 17;
+  bool release_dynamic_tensors = 18;
+  int32 optimize_memory_for_large_tensors = 19;
+
+  string input_layer = 20;
+  string input_layer_shape = 21;
+  string input_layer_value_range = 22;
+  string input_layer_value_files = 23;
+
+}
+
+message TFLiteDelegateParameters{
+  int32 max_delegated_partitions =1;
+  int32 min_nodes_per_partition = 2;
+  string delegate_serialize_dir = 3;
+  string delegate_serialize_token = 4;
+
+  //GPU Args
+  bool use_gpu = 5;
+  bool gpu_precision_loss_allowed = 6;
+  bool gpu_experimental_enable_quant = 7;
+  bool gpu_inference_for_sustained_speed = 8;
+  string gpu_backend = 9;
+  string gpu_wait_type = 10;
+
+  //NNApi
+  bool use_nnapi = 11;
+  string nnapi_execution_preference = 12;
+  string nnapi_execution_priority = 13;
+  string nnapi_accelerator_name = 14;
+  bool disable_nnapi_cpu = 15;
+  bool nnapi_allow_fp16 = 16;
+  bool nnapi_allow_dynamic_dimensions = 17;
+  bool nnapi_use_burst_mode= 18;
+
+  //Hexagon
+  bool use_hexagon = 19;
+  bool hexagon_profiling = 20;
+  string hexagon_lib_path = 21;
+
+  //XNNPACK
+  bool use_xnnpack = 22;
+
+  //CoreML delegate
+  bool use_coreml = 23;
+  int32 coreml_version = 24;
+
+  //external_delegate
+  string external_delegate_path = 25;
+  string  external_delegate_options = 26;
 }

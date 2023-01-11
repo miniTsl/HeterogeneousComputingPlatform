@@ -25,6 +25,10 @@ type ProfileClient interface {
 	ProfileWithArgs(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
 	// 获取分析能力
 	GetProfileAbility(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	// TODO 获取模型静态属性
+	GetModelStaticAttr(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	// TODO 获取设备静态属性
+	GetDeviceStaticAttr(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
 }
 
 type profileClient struct {
@@ -53,6 +57,24 @@ func (c *profileClient) GetProfileAbility(ctx context.Context, in *ProfileReques
 	return out, nil
 }
 
+func (c *profileClient) GetModelStaticAttr(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, "/protos.Profile/getModelStaticAttr", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *profileClient) GetDeviceStaticAttr(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, "/protos.Profile/getDeviceStaticAttr", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProfileServer is the server API for Profile service.
 // All implementations must embed UnimplementedProfileServer
 // for forward compatibility
@@ -60,6 +82,10 @@ type ProfileServer interface {
 	ProfileWithArgs(context.Context, *ProfileRequest) (*ProfileResponse, error)
 	// 获取分析能力
 	GetProfileAbility(context.Context, *ProfileRequest) (*ProfileResponse, error)
+	// TODO 获取模型静态属性
+	GetModelStaticAttr(context.Context, *ProfileRequest) (*ProfileResponse, error)
+	// TODO 获取设备静态属性
+	GetDeviceStaticAttr(context.Context, *ProfileRequest) (*ProfileResponse, error)
 	mustEmbedUnimplementedProfileServer()
 }
 
@@ -73,6 +99,12 @@ func (UnimplementedProfileServer) ProfileWithArgs(context.Context, *ProfileReque
 func (UnimplementedProfileServer) GetProfileAbility(context.Context, *ProfileRequest) (*ProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfileAbility not implemented")
 }
+func (UnimplementedProfileServer) GetModelStaticAttr(context.Context, *ProfileRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetModelStaticAttr not implemented")
+}
+func (UnimplementedProfileServer) GetDeviceStaticAttr(context.Context, *ProfileRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceStaticAttr not implemented")
+}
 func (UnimplementedProfileServer) mustEmbedUnimplementedProfileServer() {}
 
 // UnsafeProfileServer may be embedded to opt out of forward compatibility for this service.
@@ -82,7 +114,7 @@ type UnsafeProfileServer interface {
 	mustEmbedUnimplementedProfileServer()
 }
 
-func RegisterProfileServer(s grpc.ServiceRegistrar, srv *ProfileService) {
+func RegisterProfileServer(s grpc.ServiceRegistrar, srv ProfileServer) {
 	s.RegisterService(&Profile_ServiceDesc, srv)
 }
 
@@ -122,6 +154,42 @@ func _Profile_GetProfileAbility_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Profile_GetModelStaticAttr_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).GetModelStaticAttr(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.Profile/getModelStaticAttr",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).GetModelStaticAttr(ctx, req.(*ProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Profile_GetDeviceStaticAttr_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).GetDeviceStaticAttr(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.Profile/getDeviceStaticAttr",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).GetDeviceStaticAttr(ctx, req.(*ProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Profile_ServiceDesc is the grpc.ServiceDesc for Profile service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -136,6 +204,14 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getProfileAbility",
 			Handler:    _Profile_GetProfileAbility_Handler,
+		},
+		{
+			MethodName: "getModelStaticAttr",
+			Handler:    _Profile_GetModelStaticAttr_Handler,
+		},
+		{
+			MethodName: "getDeviceStaticAttr",
+			Handler:    _Profile_GetDeviceStaticAttr_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

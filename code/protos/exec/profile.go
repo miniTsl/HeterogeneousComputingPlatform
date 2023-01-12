@@ -40,6 +40,14 @@ func (s *ProfileService) ProfileWithArgs(ctx context.Context, request *ProfileRe
 	if err != nil {
 		resp.Msg = err.Error()
 	}
+
+	//TODO 申请该设备
+	//register.FastAllocDevices()
+	//deviceId:=register.RegisteredDevicesMap[request.DeviceName]
+	//serverAddr := register.IpPoolMap[deviceId]
+	//shellId,err:=term.FastNewTerminalAddr(serverAddr,deviceId,0)
+
+	//打开device的远程shell
 	profileType := request.Type
 	if profileType == ProfileRequest_nnMeter {
 		args := request.GetNnmeterArgs()
@@ -50,7 +58,7 @@ func (s *ProfileService) ProfileWithArgs(ctx context.Context, request *ProfileRe
 		deviceType := args.DeviceType
 		params := args.Params
 		delegateParams := args.DelegateParams
-		res := profileByTFLite(path, deviceType, params, delegateParams)
+		res := profileByTFLite(path, request.DeviceName, deviceType, params, delegateParams)
 		resp.Msg = fmt.Sprintf("TFLite\n%s", res)
 	}
 
@@ -76,35 +84,65 @@ func profileByNNMeter(path string, predictor string, version string, framework s
 	return sout
 }
 
-func profileByTFLite(path string, deviceType TFLiteArgs_DeviceType, params *TFLiteParameters, delegateParams *TFLiteDelegateParameters) string {
-	//打开shell查看执行状态...
+func profileByTFLite(path string, deviceSerial string, deviceType TFLiteArgs_DeviceType, params *TFLiteParameters, delegateParams *TFLiteDelegateParameters) string {
+	// TODO 根据deviceIP来找shell服务.
 	shell, _ := pkg.NewPowerShell()
+
 	//打开nn-meter执行环境
-	sout, serr, err := shell.Execute("adb shell \"mkdir -p /data/local/tmp/tflite_models\"")
-	sout, serr, err = shell.Execute("adb push tmp/android_aarch64_benchmark_model_performance_options /data/local/tmp")
-	sout, serr, err = shell.Execute("adb shell \"chmod +x /data/local/tmp/android_aarch64_benchmark_model_performance_options\"")
-	sout, serr, err = shell.Execute(fmt.Sprintf("adb push %s /data/local/tmp/tflite_models", path))
+	sout, serr, err := shell.Execute(fmt.Sprintf("adb -s %s  shell \"mkdir -p /data/local/tmp/tflite_models\"", deviceSerial))
+	if err != nil {
+		fmt.Println(sout, "\n", serr)
+	} else {
+		fmt.Println(sout)
+	}
+	sout, serr, err = shell.Execute(fmt.Sprintf("adb -s %s push  D:\\code\\HeterogeneousComputingPlatform\\tmp\\android_aarch64_benchmark_model_performance_options /data/local/tmp", deviceSerial))
+	if err != nil {
+		fmt.Println(sout, "\n", serr)
+	} else {
+		fmt.Println(sout)
+	}
+	sout, serr, err = shell.Execute(fmt.Sprintf("adb -s %s  shell \"chmod +x /data/local/tmp/android_aarch64_benchmark_model_performance_options\"", deviceSerial))
+	if err != nil {
+		fmt.Println(sout, "\n", serr)
+	} else {
+		fmt.Println(sout)
+	}
+	sout, serr, err = shell.Execute(fmt.Sprintf("adb -s %s push %s /data/local/tmp/tflite_models", deviceSerial, path))
+	if err != nil {
+		fmt.Println(sout, "\n", serr)
+	} else {
+		fmt.Println(sout)
+	}
 	modelName := splitFilenameFromFilePath(path)
 	if deviceType == TFLiteArgs_cpu {
 		num_threads := params.NumThreads
 		warmup_runs := params.WarmupRuns
 		enable_op_profiling := params.EnableOpProfiling
 		num_runs := params.NumRuns
-		sout, serr, err = shell.Execute(fmt.Sprintf("adb shell \"/data/local/tmp/android_aarch64_benchmark_model_performance_options \\\n  "+
-			"--num_threads=%d \\\n  --graph=/data/local/tmp/tflite_models/%s \\\n  --warmup_runs=%d \\\n  --enable_op_profiling=%t \\\n  --num_runs=%d\"", num_threads, modelName, warmup_runs, enable_op_profiling, num_runs))
+		command := fmt.Sprintf("adb  -s %s shell \"/data/local/tmp/android_aarch64_benchmark_model_performance_options "+
+			"--num_threads=%d --graph=/data/local/tmp/tflite_models/%s --warmup_runs=%d --enable_op_profiling=%t --num_runs=%d\"", deviceSerial, num_threads, modelName, warmup_runs, enable_op_profiling, num_runs)
+		sout, serr, err = shell.Execute(command)
+		if err != nil {
+			fmt.Println(sout, "\n", serr)
+		} else {
+			fmt.Println(sout)
+		}
 	} else if deviceType == TFLiteArgs_gpu {
 		warmup_runs := params.WarmupRuns
 		enable_op_profiling := params.EnableOpProfiling
 		num_runs := params.NumRuns
-		sout, serr, err = shell.Execute(fmt.Sprintf("adb shell \"/data/local/tmp/android_aarch64_benchmark_model_performance_options \\\n  "+
-			"--use_gpu=%t \\\n  --graph=/data/local/tmp/tflite_models/%s \\\n  --warmup_runs=%d \\\n  --enable_op_profiling=%t \\\n  --num_runs=%d\"", true, modelName, warmup_runs, enable_op_profiling, num_runs))
+		command := fmt.Sprintf("adb -s %s  shell \"/data/local/tmp/android_aarch64_benchmark_model_performance_options "+
+			"--use_gpu=%t --graph=/data/local/tmp/tflite_models/%s --warmup_runs=%d --enable_op_profiling=%t --num_runs=%d\"", deviceSerial, true, modelName, warmup_runs, enable_op_profiling, num_runs)
+		fmt.Println(command)
+		sout, serr, err = shell.Execute(command)
+		if err != nil {
+			fmt.Println(sout, "\n", serr)
+		} else {
+			fmt.Println(sout)
+		}
+
 	}
 
-	if err != nil {
-		fmt.Println(sout, "\n", serr)
-	} else {
-		fmt.Println(sout)
-	}
 	return sout
 
 }

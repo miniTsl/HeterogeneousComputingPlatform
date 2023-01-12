@@ -30,9 +30,12 @@ var (
 			serverIP := serverCfg.GetNetAddress()
 			registerPort, terminalPort, profilePort := serverCfg.GetRegisterPort(), serverCfg.GetTerminalPort(), serverCfg.GetProfilePort()
 			if asControlServer {
-				launchRegisterService(serverIP, registerPort)
-				//launchProfileService(serverIP, profilePort)
+				go launchRegisterService(serverIP, registerPort)
+				go launchProfileService(serverIP, profilePort)
 				//launchTerminalService(serverIP, terminalPort)
+				for {
+
+				}
 			} else if asDeviceClient {
 				deviceMsg := make([]*register.DeviceMessage, len(deviceList))
 				for i, deviceCfg := range deviceList {
@@ -65,6 +68,7 @@ func launchRegisterService(ip string, port int) {
 		log.Error(err.Error())
 		return
 	}
+	log.Info(fmt.Sprintf("launchRegisterService at %s:%d", ip, port))
 }
 
 func launchProfileService(ip string, port int) {
@@ -82,6 +86,7 @@ func launchProfileService(ip string, port int) {
 		log.Error(err.Error())
 		return
 	}
+	log.Info(fmt.Sprintf("launchProfileService at %s:%d", ip, port))
 }
 
 func launchTerminalService(ip string, port int) {

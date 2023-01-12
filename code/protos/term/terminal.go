@@ -109,6 +109,28 @@ func FastNewTerminal(serverIP string, serverPort int, deviceId uint64, shellId u
 	return res.ShellId, nil
 }
 
+func FastNewTerminalAddr(serverAddr string, deviceId uint64, shellId uint64) (uint64, error) {
+	req := NewTerminalRequest(deviceId, shellId, "")
+	conn, err := grpc.Dial(serverAddr, grpc.WithInsecure())
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+	defer conn.Close()
+	c := NewTerminalClient(conn)
+	res, err := c.NewTerminal(context.Background(), &req)
+	if err != nil {
+		log.Error(err.Error())
+		return 0, err
+	}
+	err = conn.Close()
+	if err != nil {
+		log.Error(err.Error())
+		return 0, err
+	}
+	return res.ShellId, nil
+}
+
 // This function is for client to fast call
 func FastCloseTerminal(serverIP string, serverPort int, deviceId uint64, shellId uint64) (uint64, error) {
 	req := NewTerminalRequest(deviceId, shellId, "")

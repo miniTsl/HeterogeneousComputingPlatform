@@ -12,3 +12,9 @@ DevicesList:
     deviceId : 0
     level : 1
     type : 2
+  - deviceName: 56bcbb15
+    ip: 127.0.0.1
+    terminalPort: 10020
+    deviceId: 0
+    level: 2
+    type: 0

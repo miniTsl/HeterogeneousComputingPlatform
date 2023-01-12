@@ -10,17 +10,17 @@ import (
 )
 
 var (
-	registeredDevicesMap map[string]uint64
+	RegisteredDevicesMap map[string]uint64
 	unusedDevicesMap     map[uint64]*DeviceMessage
 	usedDevicesMap       map[uint64]*DeviceMessage
-	ipPoolMap            map[uint64]string
+	IpPoolMap            map[uint64]string
 )
 
 func init() {
-	registeredDevicesMap = make(map[string]uint64)
+	RegisteredDevicesMap = make(map[string]uint64)
 	unusedDevicesMap = make(map[uint64]*DeviceMessage)
 	usedDevicesMap = make(map[uint64]*DeviceMessage)
-	ipPoolMap = make(map[uint64]string)
+	IpPoolMap = make(map[uint64]string)
 }
 
 type RegisterService struct {
@@ -39,7 +39,8 @@ func (s *RegisterService) RegisterDevice(ctx context.Context, request *RegisterR
 		//fmt.Println("%d,%s", i, device.DeviceName)
 		deviceId := uint64(time.Now().Unix())
 		device.AllocedId = deviceId
-		registeredDevicesMap[device.DeviceName] = deviceId
+		RegisteredDevicesMap[device.DeviceName] = deviceId
+		IpPoolMap[deviceId] = fmt.Sprintf("%s:%d", device.DeviceAddress, device.TerminalPort)
 		unusedDevicesMap[deviceId] = device
 		result = fmt.Sprintf("%s\n%s has registerd as %d", result, device.DeviceName, deviceId)
 	}
@@ -52,7 +53,7 @@ func (s *RegisterService) GetAllRegisteredDevice(ctx context.Context, request *R
 	//TODO implement me
 	resp := new(RegisterResponse)
 	result := ""
-	for deviceName, deviceId := range registeredDevicesMap {
+	for deviceName, deviceId := range RegisteredDevicesMap {
 		result = fmt.Sprintf("%s\n%s,%d", result, deviceName, deviceId)
 	}
 	resp.Msg = result
@@ -68,7 +69,7 @@ func (s *RegisterService) AllocDevice(ctx context.Context, request *RegisterRequ
 	for _, device := range devices {
 		deviceName := device.GetDeviceName()
 		// check the device has or not registered on server
-		deviceId, ok := registeredDevicesMap[deviceName]
+		deviceId, ok := RegisteredDevicesMap[deviceName]
 		if !ok {
 			result = fmt.Sprintf("%s\nDevice:%s is not in registered device list.", result, deviceName)
 			continue
@@ -104,7 +105,7 @@ func (s *RegisterService) FreeDevice(ctx context.Context, request *RegisterReque
 	devices := request.Devices
 	for _, device := range devices {
 		deviceName := device.GetDeviceName()
-		deviceId, ok := registeredDevicesMap[deviceName]
+		deviceId, ok := RegisteredDevicesMap[deviceName]
 		if !ok {
 			result = fmt.Sprintf("%s\nDevice:%s is not in registered device list.", result, deviceName)
 			continue

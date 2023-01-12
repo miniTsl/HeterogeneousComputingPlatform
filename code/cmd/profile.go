@@ -32,7 +32,7 @@ var (
 		Short: "profile a model on specific device",
 		Long:  "profile a model on specific device",
 		Run: func(cmd *cobra.Command, args []string) {
-			serverIP, serverPort := "192.168.1.106", 9520
+			serverIP, serverPort := "127.0.0.1", 9522
 
 			if profilerName == "nn-meter" {
 				res := exec.FastNNMeterProfile(serverIP, serverPort, dstDeviceName, modelPath, nnmeterPredictorName, nnmeterPredictorType)
@@ -48,8 +48,10 @@ var (
 	}
 )
 
+// go run code/main.go -s --cfg=cfgs/cfg.yaml
 // go run code/main.go profile --profilerName=nn-meter --nnmeterPredictorName=cortexA76cpu_tflite21 --nnmeterPredictorType=onnx --modelPath=D:\code\HeterogeneousComputingPlatform\model\resnet18-12.onnx
 // go run code/main.go profile --profilerName=nn-meter --nnmeterPredictorName=adreno640gpu_tflite21 --nnmeterPredictorType=onnx --modelPath=D:\code\HeterogeneousComputingPlatform\model\resnet18-12.onnx
+// go run code/main.go profile --profilerName=TFLite --warmsup_runs=1 --num_runs=1 --enable_op_profiling=true --use_cpu=true --num_threads=4  --modelPath=D:\code\HeterogeneousComputingPlatform\model\mobilenet_quant_v1_224.tflite --deviceName=56bcbb15
 func init() {
 	//connectCmd.PersistentFlags().BoolVar(&NNMeter, "nn-meter", true, "profile by nn-meter")
 	profileCmd.PersistentFlags().StringVar(&modelPath, "modelPath", "", "The path to the model file.")
